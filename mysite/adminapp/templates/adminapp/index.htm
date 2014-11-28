@@ -1,0 +1,520 @@
+{% load staticfiles %}
+<html>
+
+  <head>
+
+     <title>Admin App</title>
+     
+     
+     <script language="javascript" type="text/javascript" src="{% static "adminapp/scripts/jquery-1.10.1.min.js" %}"></script>
+     <script type="text/javascript">
+     
+     function saveIntermediary(){
+     
+     var fname=$("#intermediary_fname").val();
+     var lname=$("#intermediary_lname").val();
+     var username=$("#intermediary_username").val();
+     
+     var jsonObjects={Fname:fname,Lname:lname,Username:username};
+     
+     
+      
+       jQuery.ajax({
+      					url: "http://ict4d01.cs.uct.ac.za/wellness/adminapp/cmd/SI/",
+     						type: "POST",
+      					contentType: "application/json",
+      					data: JSON.stringify(jsonObjects),
+      					success: function(result) {
+      					alert(result.message);
+      						
+      						}
+      				 });	
+     
+     
+     
+     
+     }
+     
+     
+     function saveBeneficiary(){
+     
+     var fname=$("#beneficiary_fname").val();
+     var lname=$("#beneficiary_lname").val();
+     var mobile=$("#beneficiary_mobile").val();
+     var username=$("#intermediary_id").val();
+     
+     
+     if(username=="Choose Intermediary")
+         return;
+     
+     
+     
+     var jsonObjects={Fname:fname,Lname:lname,Mobile:mobile,Intermediaryid:username};
+     
+     
+      
+       jQuery.ajax({
+      					url: "http://ict4d01.cs.uct.ac.za/wellness/adminapp/cmd/SB/",
+     						type: "POST",
+      					contentType: "application/json",
+      					data: JSON.stringify(jsonObjects),
+      					success: function(result) {
+      					alert(result.message);
+      					     $('#main_interface_wrapper').load('http://ict4d01.cs.uct.ac.za/wellness/adminapp/',function(){
+                           
+                           
+                           });
+      						
+      						}
+      				 });	
+     
+     
+     
+     
+     }
+     
+     
+     
+     function removeBeneficiary(){
+     
+     var username=$("#intermediary_id").val();
+     
+     
+     if(username=="Choose Intermediary")
+         return;
+     
+     
+     
+     var jsonObjects={Intermediaryid:username,Empty:''};
+     
+      
+       jQuery.ajax({
+      					url: "http://ict4d01.cs.uct.ac.za/wellness/adminapp/cmd/DB/",
+     						type: "POST",
+      					contentType: "application/json",
+      					data: JSON.stringify(jsonObjects),
+      					success: function(result) {
+      					alert(result.message);
+      				    $('#main_interface_wrapper').load('http://ict4d01.cs.uct.ac.za/wellness/adminapp/',function(){
+                           
+                           
+                           });
+      						
+      						}
+      				 });	
+     
+     
+     
+     
+     }
+     
+     
+     
+     function checkIfAssignedBeneficiary(){
+     
+ 
+     var username=$("#intermediary_id").val();
+     
+     if(username=="Choose Intermediary")
+        return;
+     
+     var jsonObjects={Username:username};
+     
+     
+      
+       jQuery.ajax({
+      					url: "http://ict4d01.cs.uct.ac.za/wellness/adminapp/cmd/CAB/",
+     						type: "POST",
+      					contentType: "application/json",
+      					data: JSON.stringify(jsonObjects),
+      					success: function(result) {
+      					alert(result.message);
+
+                           $("#beneficiary_fname").val(result.Fname);
+                           $("#beneficiary_lname").val(result.Lname);
+                           $("#beneficiary_mobile").val(result.Mobile);
+                           
+;
+                           
+      						
+      						}
+      				 });	
+     
+     
+     
+     
+     }
+     
+     
+      $(document).ready(function(){
+      
+      
+      
+      
+      });
+     
+     </script>
+   
+     
+     
+     
+  </head>
+
+  <body id="document_body">
+  <div align="center">
+  
+ {% if authenticated == 1%}
+        
+          <table id="main_interface_wrapper" border="1">
+          
+          
+               <tr>
+               
+                     <td>
+                     
+                           <table>
+                           
+                                 
+                                     
+                                     
+                                            <form method="POST" action="http://ict4d01.cs.uct.ac.za/wellness/adminapp/cmd/SI/">
+                                              
+                                                <tr>
+                                                
+                                                    <td>First Name</td>
+                                                   <td>
+                                                    <input type="text" name="intermediary_fname" id="intermediary_fname">
+                                                    
+                                               
+                                                   </td>
+                                                </tr>
+                                                
+                                                
+                                                 <tr>
+                                                
+                                                    <td>Last Name</td>
+                                                   <td>
+                                                    <input type="text" name="intermediary_lname" id="intermediary_lname">
+                                                    
+                                               
+                                                   </td>
+                                                </tr>
+                                                <tr>
+                                                
+                                                    <td>Username</td>
+                                                   <td>
+                                                    <input type="text" name="intermediary_username" id="intermediary_username">
+                                                    
+                                               
+                                                   </td>
+                                                </tr>
+
+                                                <tr>
+                                                
+                                                   <td colspan="2" align="center">
+                                                    <input type="button" value="Save Intermediary" onclick="saveIntermediary()">
+                                                    
+                                               
+                                                   </td>
+                                                </tr>                                                
+                                            
+                                            
+                                            </form>
+                                          
+                                     
+                                     
+                                 
+                                
+
+                           </table>
+                     
+                     
+                     </td>
+                     
+                     <td>
+                            <table>
+
+
+                                            
+                                              
+                                                <tr>
+                                                
+                                                    <td>First Name</td>
+                                                   <td>
+                                                    <input type="text" name="beneficiary_fname" id="beneficiary_fname">
+                                                    
+                                               
+                                                   </td>
+                                                </tr>
+                                                
+                                                
+                                                 <tr>
+                                                
+                                                    <td>Last Name</td>
+                                                   <td>
+                                                    <input type="text" name="beneficiary_lname" id="beneficiary_lname">
+                                                    
+                                               
+                                                   </td>
+                                                </tr>
+                                                <tr>
+                                                
+                                                    <td>Mobile No</td>
+                                                   <td>
+                                                    <input type="text" name="beneficiary_mobile" id="beneficiary_mobile">
+                                                    
+                                               
+                                                   </td>
+                                                </tr>
+                                                
+                                                <tr>
+                                                      <td>
+                                                      Assign An intermediary
+                                                      </td>
+                                                      
+                                                      <td>
+                                                      
+                                                      <select id="intermediary_id" onchange="checkIfAssignedBeneficiary()">
+                                                                    <option>Choose Intermediary</option>
+                                                              {% for key,intermediary in intermediaries.items %}
+                                                              
+                                                                      <option>{{intermediary.D1}}</option>
+                                                              
+                                                              
+                                                              {% endfor %}
+                                                      
+                                                      </select>
+                                                      
+                                                      
+                                                      </td>                         
+                                                
+                                                </tr>
+
+                                                <tr>
+                                                
+                                                   <td colspan="2" align="center">
+                                                    <input type="button" value="Save Beneficiary" onclick="saveBeneficiary()">
+                                                    <input type="button" value="Delete Beneficiary" onclick="removeBeneficiary()">
+                                                    
+                                               
+                                                   </td>
+                                                </tr>                                                
+                                            
+                                            
+                                           
+                            
+                            
+                            
+                            </table>     
+                     
+                     
+                     
+                     
+                     </td>               
+               
+               
+               </tr>
+               
+               <tr>
+                     <td colspan="2" align="center">
+                    
+                             <table border="1">
+                           
+                                           <form method="POST" action="http://ict4d01.cs.uct.ac.za/wellness/adminapp/cmd/AB/"> 
+                                           
+                                              
+                                                <th>
+                                                
+                                                  S/No.                                                
+                                                </th>
+                                                
+                                                <th>
+                                                
+                                                  UserID
+                                                </th>
+                                          <button class="ui-btn ui-icon-lock ui-btn-icon-left">Lock Button</button>      
+                                                <th>
+                                                
+                                                 Intermerdiary Name
+                                                
+                                                </th>
+                                                
+                                                
+                                                <th>
+                                                
+                                                   Assigned Beneficiary
+                                                
+                                                </th>
+                                                
+
+                                        
+                                                    
+                                                         
+                                                 {% for key,intermediary in intermediaries.items %}
+                                                 
+                                                       <tr>
+                                                             <td>
+                                                              {{forloop.counter}}
+                                                             </td>
+                                                             
+                                                             <td>
+                                                              {{intermediary.D1}}
+                                                                 
+                                                             </td>
+                                                             <td>
+                                                                 
+                                                                 {{intermediary.D0}}
+                                                             
+                                                             </td>
+
+
+                                                              <td id="assigned_intermediary">
+                                                              
+                                                              
+                                                             
+                                                                  {{intermediary.D2}}
+                                                             
+                                                                                                                        
+                                                              
+                                                              
+                                                              </td>
+                                                              
+                                                              
+
+                                                            
+                        
+                                                              
+                                                              
+                                                             
+                                                              
+                                                        
+                                                       </tr>
+                                                 
+                                                 
+                                                 
+                                                 {%endfor%}
+                                                     
+                                                
+                                                
+                                             
+                                           
+                                           </form>                       
+                           
+                           
+                             </table>
+                     
+                     
+                     
+                     </td>
+               
+               
+               
+               
+               
+               </tr>
+      
+
+                <tr>
+                
+                      <td colspan="2" align="center"> 
+                      <form method="POST" action="http://ict4d01.cs.uct.ac.za/wellness/adminapp/cmd/LG/">{% csrf_token %} 
+                         <input type="submit" value="Logout">
+                       </form>
+                      </td>                
+                </tr>
+           </table>
+       
+  
+  
+  
+
+{% else %}
+
+
+ 
+ 
+
+       <form method="POST" action="http://ict4d01.cs.uct.ac.za/wellness/adminapp/">{% csrf_token %}
+        <table id="main_interface_wrapper">
+      
+           <tr>
+           
+                 <td>
+                 
+                       Username:
+                 
+                 
+                 </td> 
+                 
+                 
+                 <td>
+                 
+                      <input type="text" name="username" value="{{username}}">
+                 
+                 
+                 </td>         
+           </tr>
+           <tr>
+           
+                 <td>
+                 
+                       Password:
+                 
+                 
+                 </td> 
+                 
+                 
+                 <td>
+                 
+                      <input type="password" name="passwd">
+                 
+                 
+                 </td> 
+           
+           
+           
+                 
+           
+           </tr>
+           
+           <tr>
+           
+               <td colspan="2" align="center">
+                  
+                     <input type="submit" value="Login">
+                   
+               
+               </td>
+           
+           
+           
+           </tr>      
+      
+      
+      
+      
+      </table>
+     </form>
+     
+{% endif %}
+  
+  
+
+
+
+
+
+</div>
+
+      
+     
+
+
+ </body>
+
+
+
+
+
+
+</html>

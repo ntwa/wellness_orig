@@ -1,0 +1,16 @@
+/__init__.pyc
+/authentication_module.pyc
+/plot_activity_graph.pyc
+/plot_meal_graph.pyc
+/plot_weight_graph.pyc
+/retrieve_activity_goal.pyc
+/retrieve_intermediary.pyc
+/retrieve_meals_goal.pyc
+/retrieve_weight.pyc
+/save_activity_goal.pyc
+/save_logs.pyc
+/save_meal.pyc
+/save_meals_goal.pyc
+/save_points.pyc
+/save_weight.pyc
+/sync_activity.pyc

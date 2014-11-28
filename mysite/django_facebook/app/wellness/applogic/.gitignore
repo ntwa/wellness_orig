@@ -1,0 +1,9 @@
+/__init__.pyc
+/activity_module.pyc
+/food_beverage_module.pyc
+/health_goal_module.pyc
+/intermediary_module.pyc
+/logs_module.pyc
+/points_module.pyc
+/weight_module.pyc
+/dbconn.py

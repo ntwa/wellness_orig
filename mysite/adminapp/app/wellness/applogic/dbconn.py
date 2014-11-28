@@ -1,0 +1,1 @@
+connstr='mysql://root:ugnkat@localhost/wellness'
