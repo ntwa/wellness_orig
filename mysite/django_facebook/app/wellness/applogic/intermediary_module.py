@@ -88,9 +88,9 @@ class Comment(Base):
     commentdetails = Column(String(500),nullable=False)
     date_captured = Column(Date,nullable=False)
     time_captured = Column(Time,nullable=False)
-    event_start_date=Column(Date,nullable=False)
-    event_end_date=Column(Date,nullable=False)
-    event_type=Column(Enum('Activity','Meal','Weight'), nullable=False)
+    #event_start_date=Column(Date,nullable=False)
+    #event_end_date=Column(Date,nullable=False)
+    event_type=Column(Enum('Activity','Meal','Weight','Garden','FishTank','Badge','LeaderBoard'), nullable=False)
     message_sent_status= Column(Boolean)
     beneficiary_id = Column(Integer, ForeignKey("beneficiaries.id"))
     
