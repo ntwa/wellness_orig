@@ -8,7 +8,7 @@ from sqlalchemy.pool import NullPool
 
 #db = create_engine(connstr,pool_size=20, max_overflow=0)
 Base = declarative_base()
-db = create_engine('mysql://root:ugnkat@localhost/wellness',poolclass=NullPool)
+db = create_engine(connstr,poolclass=NullPool)
 dbconn=db.connect()
        
 class Factors(Base):

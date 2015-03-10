@@ -6,7 +6,7 @@ from dbconn import connstr
 from sqlalchemy.pool import NullPool
 
 #db = create_engine(connstr ,pool_size=20, max_overflow=0)
-db = create_engine('mysql://root:ugnkat@localhost/wellness',poolclass=NullPool)
+db = create_engine(connstr,poolclass=NullPool)
 dbconn=db.connect()
 
 Base = declarative_base()
@@ -17,14 +17,16 @@ class Intermediary(Base):
     intermediary_id = Column(String(50),primary_key=True)
     intermediary_fname=Column(String(50))
     intermediary_lname=Column(String(50))
-    
+    mobile=Column(String(50))
     #passwd= Column(String(50))
     #beneficiary = relationship("Beneficiary", backref=backref("intermediaries", order_by=intermediary_id))
     beneficiary = relationship("Beneficiary",uselist=False, backref="intermediaries")
-    def __init__(self,intermediary_id,intermediary_fname,intermediary_lname):
+   
+    def __init__(self,intermediary_id,intermediary_fname,intermediary_lname,mobile):
         self.intermediary_id=intermediary_id
         self.intermediary_fname=intermediary_fname
         self.intermediary_lname=intermediary_lname
+        self.mobile=mobile
         
     def setId(self):
         pass
@@ -51,6 +53,10 @@ class Beneficiary(Base):
     beneficiary_fname=Column(String(50))
     beneficiary_lname=Column(String(50))
     beneficiary_mobile=Column(String(20))
+    relation=Column(String(50))
+
+    gender=Column(String(10))
+    team_name=Column(String(30))
     intermediary_id = Column(String(50), ForeignKey("intermediaries.intermediary_id"))
     comment = relationship("Comment", backref=backref("beneficiaries", order_by="Comment.id"))
     

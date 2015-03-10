@@ -3,7 +3,7 @@ import datetime
 import sys,json
 from sqlalchemy import create_engine,distinct,func
 from sqlalchemy.orm import sessionmaker
-from wellness.applogic.intermediary_module import Intermediary,Beneficiary,db,dbconn
+from wellness.applogic.intermediary_module import Intermediary,Beneficiary,db
 from collections import OrderedDict
 
 
@@ -11,6 +11,65 @@ class RetrieveIntermediary:
      def __init__(self,myjson):
           self.myjson=myjson
           self.count=0
+     def saveTeamName(self):
+          result={}
+          try:
+              
+               beneficiary_id=self.myjson["BeneficiaryID"]
+               teamname=self.myjson["TeamName"]
+                                  
+          except Exception as e:
+               #print "Content-type: text/html\n" 
+               result["D0"]="Error%s"%e.message
+               result["D1"]=-1
+               return (json.JSONEncoder().encode(result))
+          
+          
+                   
+          
+          try:
+               #engine=create_engine('mysql://root:ugnkat@localhost/wellness', echo=False) 
+               engine=db
+               # create a Session
+               Session = sessionmaker(bind=engine)
+               session = Session()
+
+               
+               
+               # querying for a beneficiary
+               #res= session.query(Intermediary,Beneficiary).filter(Intermediary.intermediary_id==Beneficiary.intermediary_id).all()
+               res= session.query(Beneficiary).filter(Beneficiary.id==beneficiary_id).first()
+             
+               if res is None:
+                    counter=0
+               else: 
+                    res.team_name=teamname
+                    session.commit()
+                    result["D0"]="Team name was updated successfully"
+                    result["D1"]=1
+            
+               session.close()
+               engine.dispose()
+               
+               
+
+               return(json.JSONEncoder().encode(OrderedDict(sorted(result.items(), key=lambda t: t[0]))))
+     
+                                   
+                                   
+          except Exception as e:
+                         
+               #print "Content-type: text/html\n" 
+               session.close()
+               engine.dispose()
+                                   
+               result["D0"]=e
+               result["D1"]=-1
+               #print      
+               return (json.JSONEncoder().encode(result))
+               #sys.exit()
+          
+          
      
      def countIntermediaries(self):
           result={}              
@@ -37,10 +96,6 @@ class RetrieveIntermediary:
                     counter=res.count_interm
                
                result["counter"]=counter
-               session.close()
-               engine.dispose()
-               dbconn.close()
-
 
                return(json.JSONEncoder().encode(OrderedDict(sorted(result.items(), key=lambda t: t[0]))))
      
@@ -51,7 +106,6 @@ class RetrieveIntermediary:
                #print "Content-type: text/html\n" 
                session.close()
                engine.dispose()
-               dbconn.close()
                                    
                intermediary_records["R00"]=e
                #print      
@@ -83,30 +137,30 @@ class RetrieveIntermediary:
                res= session.query(Intermediary,Beneficiary).filter(Intermediary.intermediary_id==Beneficiary.intermediary_id).filter(Beneficiary.intermediary_id==intermediary_id).first()
                if res is None:
                     result["message"]="This intermediary is not yet assigned a Beneficary."
-                    result["Id"]=None
                else: 
                     interm,ben=res
-                    result["message"]="This intermediary is arleady assigned a Beneficary. Continuing with this intermediary will override details of an existing beneficiary"
+                    result["message"]="This intermediary is arleady assigned a Beneficiary. Continuing with this intermediary will override details of an existing beneficiary"
                     result["Fname"]=ben.beneficiary_fname
                     result["Lname"]=ben.beneficiary_lname
                     result["Mobile"]=ben.beneficiary_mobile
                     result["Id"]=ben.id
-               
+                    result["Relation"]=ben.relation
+                    result["TeamName"]=ben.team_name
+                    result["Ifname"]=interm.intermediary_fname
+                    result["Ilname"]=interm.intermediary_lname
+                                   
                session.close()
                engine.dispose()
-               dbconn.close()
                     
                return (json.JSONEncoder().encode(result))                   
                                    
           except Exception as e:
                session.close()
                engine.dispose() 
-               dbconn.close()
                          
                #print "Content-type: text/html\n" 
                                    
                result["message"]="Error: %s"%e
-               result["Id"]=None
                #print      
                return (json.JSONEncoder().encode(result))
                #sys.exit()
@@ -165,8 +219,6 @@ class RetrieveIntermediary:
                     
                session.close()
                engine.dispose()
-               dbconn.close()
-
                return(json.JSONEncoder().encode(OrderedDict(sorted(intermediary_record.items(), key=lambda t: t[0]))))
      
                                    
@@ -176,7 +228,6 @@ class RetrieveIntermediary:
                #print "Content-type: text/html\n" 
                session.close()
                engine.dispose()
-               dbconn.close()
                                    
                intermediary_record["R00"]=e
                #print      
@@ -214,8 +265,11 @@ class RetrieveIntermediary:
                     data["D0"]="%s %s"%(interm_tuple.intermediary_fname,interm_tuple.intermediary_lname)      
                     data["D1"]="%s"%interm_tuple.intermediary_id   
                     data["D2"]="%s %s. Mobile:%s"%(ben_tuple.beneficiary_fname,ben_tuple.beneficiary_lname,ben_tuple.beneficiary_mobile)
+                    data["D3"]="Relationship:%s"%ben_tuple.relation
+                    data["D4"]="Gender:%s"%ben_tuple.gender
+                    data["D5"]="Mobile:%s"%interm_tuple.mobile # an intermediary's phone number
                     
-                    data["D3"]="%s"%ben_tuple.id 
+                    
                     intermediary_records["%s%s"%(Key1,counter)]=OrderedDict(sorted(data.items(), key=lambda t: t[0]))
                                        
                     intermediaries_ids.append(ben_tuple.intermediary_id)
@@ -262,8 +316,6 @@ class RetrieveIntermediary:
                     
                session.close()
                engine.dispose()
-               dbconn.close()
-
                return(json.JSONEncoder().encode(OrderedDict(sorted(intermediary_records.items(), key=lambda t: t[0]))))
      
                                    
@@ -273,7 +325,6 @@ class RetrieveIntermediary:
                #print "Content-type: text/html\n" 
                session.close()
                engine.dispose()
-               dbconn.close()
                                    
                intermediary_records["R00"]=e
                #print      
@@ -287,7 +338,7 @@ class RetrieveIntermediary:
 #result=obj.countIntermediaries()
 #print result
 
-#myjson={'Fname':'Lucas','Lname':'Katule','Username':'katulentwa@gmail.com'}
+#myjson={'Fname':'Lucas','TeamName':'Bafana','BeneficiaryID':'1'}
 #obj=RetrieveIntermediary(myjson)
-#result=obj.isAssignedBeneficiary()
+#result=obj.saveTeamName()
 #print result

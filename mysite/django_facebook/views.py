@@ -18,6 +18,7 @@ from app.save_activity_goal import SaveActivityGoal
 from app.save_comment import SaveComment
 from app.retrieve_points import RetrievePoints
 from app.queue_notifications import FacebookNotification
+from app.manage_avatars import ManageAvatars
 import os
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
@@ -182,8 +183,8 @@ def dataloader(request,command_id):
             if request.user.is_authenticated():
                 intermediary_id=request.user.username
                 intermediary_id=intermediary_id.replace(".","")   
-                if intermediary_id=="ntwakatule":
-                    intermediary_id="katulentwa@gmail.com"
+                #if intermediary_id=="ntwakatule":
+                #    intermediary_id="katulentwa@gmail.com"
             else:
                 raise Exception("Access denied")
                 
@@ -295,7 +296,7 @@ def dataloader(request,command_id):
         alldata=retriveAllData(beneficiary_id,intermediary_id)
         return HttpResponse(alldata, mimetype='application/json')
     
-    if command_id =="RMG":
+    elif command_id =="RMG":
         #RMG means retrieve meals goal
         goal=retrieveMealGoal(beneficiary_id)
         return HttpResponse(goal, mimetype='application/json')
@@ -352,6 +353,14 @@ def dataloader(request,command_id):
         #myjson =json.loads(request.body) 
         status=retrieveScoreGardens(myjson,intermediary_id)
         return HttpResponse(status, mimetype='application/json')
+
+    elif command_id=="GAAV":
+        myjson={"IntermediaryId":intermediary_id}
+        obj=ManageAvatars(myjson)
+        status=obj.getAllAvatars()
+        
+        return HttpResponse(status, mimetype='application/json')
+
         
         
 
@@ -390,6 +399,11 @@ def queueNotification(myjson,beneficiary_id):
     obj=FacebookNotification(myjson,beneficiary_id)
     status=obj.queueNotification()
     return status
+
+def saveTeamName(myjson):
+    obj=RetrieveIntermediary(myjson)
+    status=obj.saveTeamName()
+    return status
     
 
 
@@ -405,8 +419,8 @@ def dataupdate(request,command_id):
         if request.user.is_authenticated():
             intermediary_id=request.user.username
             intermediary_id=intermediary_id.replace(".","") 
-            if intermediary_id=="ntwakatule":
-                intermediary_id="katulentwa@gmail.com"
+            #if intermediary_id=="ntwakatule":
+            #    intermediary_id="katulentwa@gmail.com"
         else:
             result={}
             result["R00"]={'F1':-6,'F0':"Access denied"}# a code used when an intermediary is not logged in
@@ -510,6 +524,11 @@ def dataupdate(request,command_id):
         #errorcode["message"]="gfgfgfg"
         #status=json.JSONEncoder().encode(errorcode) 
         return HttpResponse(status, content_type='application/json')
+    elif command_id == "CTN":
+        myjson=json.loads(request.body)
+        myjson["BeneficiaryID"]=beneficiary_id
+        status=saveTeamName(myjson)
+        return HttpResponse(status,content_type='application/json')
 
 @login_required
 def pagelogout(request):
@@ -527,6 +546,11 @@ def index(request):
     username=""
     context = RequestContext(request)
     invaliduser=0
+    beneficiary_team=""
+    beneficiary_relation=""
+    
+    intermediary_fname=""
+    intermediary_lname=""
     context["exception"]="None"
     try:
          
@@ -535,8 +559,8 @@ def index(request):
             username=username.replace(".","") 
             context["exception"]=username
             #facebook_data = facebook.facebook_registration_data()
-            if username=="ntwakatule":
-                username="katulentwa@gmail.com"
+            #if username=="ntwakatule":
+            #    username="katulentwa@gmail.com"
             #username=facebook_data['facebook_id']
             myjson={'Username':username}
             obj=RetrieveIntermediary(myjson)
@@ -544,22 +568,35 @@ def index(request):
             status3=obj.countIntermediaries()
             status2=json.loads(status2)
             status3=json.loads(status3)
+            intermediary_fname=status2["Ifname"]
+            intermediary_lname=status2["Ilname"] 
             beneficiary_fname=status2["Fname"]
             beneficiary_lname=status2["Lname"]
+            beneficiary_relation=status2["Relation"]
+            beneficiary_team=status2["TeamName"]
+           
             beneficiary_ids=obj.retrieveIntermediaryInDB();
             beneficiary_ids=json.loads(beneficiary_ids)
             beneficiaries_counter=status3["counter"]
             
     except Exception as e:
         invaliduser=1
-        #context["exception"]="The following exception %s is thrown on %s "%(e,username)       
         pass
+       # status={"Error":e}
+       # status=json.JSONEncoder().encode(status) 
+       # return HttpResponse(status, content_type='application/json')
+        #context["exception"]="The following exception %s is thrown on %s "%(e,username)       
+      
     #return HttpResponse(content)
     context['invaliduser']=invaliduser
     #context['username']=username
     if request.user.is_authenticated():
         context['fname']=beneficiary_fname
         context['lname']=beneficiary_lname
+        context['ifname']=intermediary_fname
+        context['ilname']=intermediary_lname
+        context['relation']=beneficiary_relation
+        context["teamname"]=beneficiary_team
         ben_num={}
         key="R"
         for x in range(0,beneficiaries_counter):
@@ -574,12 +611,16 @@ def index(request):
 
         intermediary_id=request.user.username
         intermediary_id=intermediary_id.replace(".","")
-        if intermediary_id=="ntwakatule":
-            intermediary_id="katulentwa@gmail.com"
+        #if intermediary_id=="ntwakatule":
+        #    intermediary_id="katulentwa@gmail.com"
         obj=RetrievePoints(myjson,intermediary_id,1)
         result=obj.retrieveIndividualBadge()
-               
         result=json.loads(result)
+
+        myjson={"IntermediaryId":intermediary_id}      
+        obj=ManageAvatars(myjson) 
+        result2=obj.getAvatarUrl()
+        result2=json.loads(result2)
        
         todaysdate=datetime.date.today()   
         date_str=todaysdate.strftime('%d-%m-%Y')  
@@ -589,6 +630,8 @@ def index(request):
         context["scoredate"]=date_str    
         context["todaysdate"]=date_str2
               
+        context["avatar"]=result2["AvatarUrl"]
+        context["avatarId"]=result2["AvatarId"]
         context.push()
         
     #return HttpResponse(template.render(context))

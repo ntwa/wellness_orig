@@ -10,7 +10,7 @@ from sqlalchemy.pool import NullPool
 
 #db = create_engine('mysql://root:ugnkat@localhost/wellness')
 
-db = create_engine('mysql://root:ugnkat@localhost/wellness',poolclass=NullPool)
+db = create_engine(connstr,poolclass=NullPool)
 dbconn=db.connect()
 
 Base = declarative_base()
