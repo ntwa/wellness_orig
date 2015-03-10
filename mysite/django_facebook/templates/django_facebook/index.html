@@ -266,7 +266,6 @@ sendMessage($("#weightcommentbox").val(),previous_day_displayed_weight,'Weight')
 var initialized=false;
 
 
-
 function initializeMenu(){
  
  $('<audio id="clickAudio"><source src="{%static "django_facebook/sound/checkout.wav" %}" type="audio/wav"><source src="{%static "django_facebook/sound/electronic.wav" %}" type="audio/wav"><source src="{%static "django_facebook/sound/checkout.wav" %}" type="audio/wav"></audio>').appendTo('body');
@@ -284,15 +283,18 @@ if(!initialized)
 
 			    $('#clickAudio')[0].play();
 
-		 
+		       
 
 			 switch(item)
 
 			  {
 
-			       
+			      case "TeamProfile":$.mobile.changePage("#teamprofile",{ transition: "slide", changeHash: false });break;
 			      case "MainPage":$.mobile.changePage( "#pageone", { transition: "slide", changeHash: false });break;
 
+			      case "SaveProfileAndMainPage":checkModification();break;
+			      
+               case "SaveProfile":saveProfile();break;
                case "FoodAndBeverages":$.mobile.changePage( "#foodinterface", { transition: "slide", changeHash: false });break;
 
                case "Goals":$.mobile.changePage( "#healthgoals", { transition: "slide", changeHash: false });break;
@@ -325,7 +327,7 @@ if(!initialized)
 
 
 
-                case "ActivityGraphs":$.mobile.changePage( "#activityinterface", { transition: "slide", changeHash: false });break;
+                case "ActivityGraphs":alert(item);$.mobile.changePage( "#activityinterface", { transition: "slide", changeHash: false });break;
 
                 case "WeighingScale":$.mobile.changePage( "#weightinterface", { transition: "slide", changeHash: false });break;
 
@@ -353,9 +355,404 @@ if(!initialized)
 
 
 }
+/*
+$(document).on("pageshow","#teamprofile",function(){
+ 
+
+
+});*/
+/*
+var save_flag=0;
+var repeating_modification=0;
+var changeSaveFlag=function()
+{
+  //alert("Repeated Flag="+save_flag+" , repeted_Modified="+repeating_modification);
+  
+ if(save_flag==1){
+        save_flag=0;
+        
+
+ }
+ else
+    {
+    if(!repeating_modification)
+     {
+        var quit_profile_inner_element="<a href='#confirmProfileSavePopUp' data-rel='popup' data-position-to='window' data-transition='fade' class='ui-btn ui-corner-all ui-shadow ui-btn-inline'>Main Page</a>";
+        $("#quitprofile").html('');
+        $("#quitprofile").append(quit_profile_inner_element);
+        repeating_modification=1;
+     
+     }
+    
+    }
+ 
+
+}
+*/
+
+var previous_team_name='{{teamname}}';
+var global_team_name=previous_team_name;
+var alertmsg="";
+
+function saveProfile(){
+      
+      var team_name=$("#team_name").val();
+      // $("#quitprofile").html('');
+    
+      //open ajax for saving
+       var jsonObjects={TeamName:team_name};
+
+       jQuery.ajax({
+
+       url: "http://ict4d01.cs.uct.ac.za/facebook/dataupdate/CTN/",//change team name
+
+      type: "POST",
+
+      contentType: "application/json",
+
+      data: JSON.stringify(jsonObjects),
+
+
+      success: function(result) {
+                        //save_flag=1;
+                        //repeating_modification=0;
+                        alert(result.D0); 
+                        
+                        previous_team_name=team_name;//the new team name is this
+                        global_team_name=previous_team_name;
+                        
+                        
+                        //change the back button to allow going back to the main page
+                        // var quit_profile_inner_element="<a data-transition='slide' class='ui-btn ui-corner-all ui-shadow ui-btn-inline menuimage ui-icon-check' alt='MainPage' >Main Page</a>";
+                         //$("#quitprofile").html('');
+                        // $("#quitprofile").append(quit_profile_inner_element);
+                        // initialized=false;
+                         //initializeMenu();
+                       
+                      },
+      async: false      
+      
+      
+       });
 
 
 
+}
+
+
+
+function checkModification(){
+
+   var team_name=$("#team_name").val();
+   
+   //$.mobile.changePage( "#confirmProfileSave", { transition: "pop", changeHash: false });
+     
+   
+   if(previous_team_name!=team_name){
+   return 1;
+     // var answer=confirm("You have changed the team name from '"+previous_team_name+"' to '"+team_name+"'. Do you want to save these changes");
+     /* if(answer)
+      {
+      //open ajax for saving
+       var jsonObjects={TeamName:team_name};
+
+       jQuery.ajax({
+
+       url: "http://ict4d01.cs.uct.ac.za/facebook/dataupdate/CTN/",//change team name
+
+      type: "POST",
+
+      contentType: "application/json",
+
+      data: JSON.stringify(jsonObjects),
+
+
+      success: function(result) {
+                        save_flag=1;
+                        alert(result.D0); 
+                        previous_team_name=team_name;//the new team name is this
+                        global_team_name=previous_team_name;
+      
+                        $.mobile.changePage( "#pageone", { transition: "slide", changeHash: false });
+                      }      
+      
+      
+       });
+      
+  
+
+   }
+   else
+   {
+      
+       $.mobile.changePage( "#pageone", { transition: "slide", changeHash: false });
+      
+      
+      }*/
+
+   }
+   else
+      {
+       
+      
+       //$.mobile.changePage( "#pageone", { transition: "slide", changeHash: false });
+      
+      return 0;
+     
+      
+      
+      
+      }
+
+}
+
+/*
+$(document).on('pagebeforeshow', '#teamprofile', function(){ 
+
+
+    $(document).on("popupafterclose", "#confirmProfileSavePopUp",function( event, ui ) {
+       $.mobile.changePage( "#pageone", { transition: "slide", changeHash: false });
+    
+    });
+    
+    
+    });
+    
+    */
+
+
+$(document).on('pagebeforeshow', '#teamprofile', function(){ 
+
+    /*
+    $(document).on("popupafteropen", "#confirmProfileSavePopUp",function( event, ui ) {
+        //alert('popup');
+        if(!checkModification())
+          {
+          
+         setTimeout(function(){
+          $( "#confirmProfileSavePopUp" ).popup( "close" );},1);
+            
+           //$.mobile.changePage( "#pageone", { transition: "slide", changeHash: false });
+          
+          }
+         else
+         {
+
+         
+         }
+         
+         
+    }); */ 
+});
+
+
+
+
+
+
+$(document).on("pageshow","#teamprofile",function(){
+          //$("#yesprofilesave").off("vclick");
+          //$("#save_profile").off("vclick");
+           
+             
+     });
+     
+ //$(document).on("pageshow","#listAvatars",function(){
+ 
+ //avatartable
+          //$("#yesprofilesave").off("vclick");
+          //$("#save_profile").off("vclick");
+           //var jsonObjects={TeamName:team_name};
+/*
+      jQuery.ajax({
+
+      url: "http://ict4d01.cs.uct.ac.za/facebook/jsondata/GAAV/",//change team name
+
+      type: "POST",
+
+      contentType: "application/json",
+
+      //data: JSON.stringify(jsonObjects),
+
+
+      success: function(res) {
+                        //save_flag=1;
+                        //repeating_modification=0;
+                        //alert(res.R00.D0); 
+                        
+                        previous_team_name=team_name;//the new team name is this
+                        global_team_name=previous_team_name;
+                        
+                        
+                        //change the back button to allow going back to the main page
+                        // var quit_profile_inner_element="<a data-transition='slide' class='ui-btn ui-corner-all ui-shadow ui-btn-inline menuimage ui-icon-check' alt='MainPage' >Main Page</a>";
+                         //$("#quitprofile").html('');
+                        // $("#quitprofile").append(quit_profile_inner_element);
+                        // initialized=false;
+                         //initializeMenu();
+                       
+                      },
+      async: false     
+      
+      
+       });   */      
+          
+          
+ 
+           
+             
+    /// });    
+     
+
+$(document).on("pagecreate","#teamprofile",function(){
+
+    $(document).on("popupafteropen", "#confirmProfileSavePopUp",function( event, ui ) {
+        //alert('popup');
+        if(!checkModification())
+          {
+          
+         setTimeout(function(){
+          $( "#confirmProfileSavePopUp" ).popup( "close" );},1);
+            
+           $.mobile.changePage( "#pageone", { transition: "slide", changeHash: false });
+          
+          }
+         else
+         {
+         /*
+         //allow a dialog to do saving
+         $("#yesprofilesave").on("vclick", function(event){
+           event.stopPropagation(); 
+            saveProfile();
+            
+            //after saving change page
+            $.mobile.changePage( "#pageone", { transition: "slide", changeHash: false });
+         });
+         
+         */
+         
+         }
+         
+         
+    });
+
+
+
+
+
+
+
+
+
+
+ $("#editmode").prop( "checked", false ).checkboxradio( "refresh" );
+ $("#viewmode").prop( "checked", true ).checkboxradio( "refresh" );
+ 
+          //allow a dialog to do saving
+         $("#yesprofilesave").on("vclick", function(event){
+           event.stopPropagation(); 
+            saveProfile();
+            
+            //after saving change page
+            $.mobile.changePage( "#pageone", { transition: "slide", changeHash: false });
+         });
+ 
+ 
+
+
+trackPage($.mobile.activePage.attr("data-url"));
+ $("#team_container").append("<input type='text' value='{{teamname}}' readonly>");
+ 
+
+$(".modelabel").on("vclick", function(event){
+      event.stopPropagation(); // stop the .tile click being called
+;
+      var val =$("input[name=displaymode]:checked").val();
+      
+      var avatar_str="" ;
+      var team_str="";
+      var save_profile_str="";
+      
+    if(val=="Edit"){
+    
+       avatar_str="<img src='{{avatar}}' width='60' width='60'><br> <p class='menuimage' alt='ChangeAvatar' style='cursor:pointer;'>Change</p>" ;
+     
+       save_profile_str="<a class='ui-btn ui-icon-action ui-btn-icon-left menuimage' id='save_profile' alt='SaveProfile'>Save</a>"
+       
+       team_str="<input type='text' id='team_name'  value='"+global_team_name+"'>";
+       
+        
+      
+    
+        }
+    else
+      {
+      
+          if(val=="View"){
+          
+               avatar_str="<img src='{{avatar}}' width='60' width='60'><br>Change" ;
+               save_profile_str="<a class='ui-btn ui-icon-action ui-btn-icon-left menuimage ui-disabled'>Save</a>"
+               team_str="<input type='text' id='team_name' value='"+global_team_name+"' readonly>";
+               //$("#yesprofilesave").off("vclick");
+               $("#save_profile").off("vclick");
+          }      
+      
+      }
+      
+      $("#avatar_container").html('');
+      $("#team_container").html('');
+       $("#save_profile").html('');
+      $("#avatar_container").append(avatar_str);
+      $("#save_profile").append(save_profile_str);
+      $("#team_container").append(team_str);
+      //displayActivityForInterval($(this).text());
+      
+      if(val=="Edit"){
+          
+          //initialized=false;
+          //initializeMenu();
+          
+          $("#save_profile").off("vclick");
+         $("#save_profile").on("vclick", function(event){
+         event.stopPropagation(); 
+           saveProfile();
+           
+         
+         });
+         
+        /* 
+        $("#yesprofilesave").on("vclick", function(event){
+         
+          
+             saveProfile();
+             //$("#yesprofilesave").off("vclick");
+             //$("#save_profile").off("vclick");
+          
+           
+           //then move to the first page
+           $.mobile.changePage( "#pageone", { transition: "slide", changeHash: false });
+           
+           
+         
+         });*/
+         
+      
+      
+      
+      }
+
+});
+
+ 
+
+});
+
+
+
+/*
+function changePage() {
+$.mobile.changePage( "#pageone", { transition: "slide", changeHash: false });
+}*/
 
 
 $(document).on("pagecreate","#activityinterface",function(){
@@ -1041,8 +1438,54 @@ $( "#myPopup" ).popup("open");
 initializeMenu();
 
 });
+/*
+$('#confirmProfileSavePopUp').on('popupafteropen', function(event) {
+    console.log(this); // should give you the anchor element
+    console.log($(this)); // should give you the jquery anchor element 
+});
+
+*/
+
+/*
+$(document).on("pagecreate","#confirmProfileSavePopUp",function(){
+ //trackPage($.mobile.activePage.attr("data-url"));
+ 
+$( "#confirmProfileSavePopUp" ).popup({ history: false }); 
+
+$( "#confirmProfileSavePopUp" ).popup("open"); 
+ initializeMenu();
+// alert("Hooray");
+
+});
+*/
+
+/*
+$(document).on("pageshow","#confirmProfileSavePopUp",function(){
+ //trackPage($.mobile.activePage.attr("data-url"));
+ 
+ var team_name=$("#team_name").val();
 
 
+var confirm_text="You have changed the team name from '"+previous_team_name+"' to '"+team_name+"'. Do you want to save these changes";
+$( "#confirmProfileSaveText" ).html('');
+$( "#confirmProfileSaveText" ).append(confirm_text);
+
+
+
+
+});*/
+
+/*
+
+$(document).on("pagecreate","#confirmProfileSave",function(){
+
+//dialogtext_save_profile
+
+initializeMenu();
+
+
+});
+*/
 
 $(document).on("pagecreate","#foodinterface",function(){
 
@@ -2644,12 +3087,14 @@ function trackPage(page_id)
   </div>
 
 </div> 
+
 <div data-role="page"  id="pageone">
 
   <div data-role="header" style="background:#3b5998">
-
-    <h1>Family-Well-App</h1>
-
+   
+   <h1>Family-Well-App</h1>
+ 
+ 
   </div>
 
 
@@ -2657,19 +3102,97 @@ function trackPage(page_id)
   <div data-role="main" class="ui-content" >
 
     
-       
+         
          <div id="badgesimages" hidden> 
         <img src="{{badge}}" id="teambadge"/>
-	<img src="http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/explosion.jpeg" id="explosion">     
+	     <img src="http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/explosion.jpeg" id="explosion">     
 	     
 	     </div>
-	
+	     
 
                          
 
       <table class="main_interface_wrapper" align="center">
- 
-       <tr><td style="width: 100%;height: 10%;" colspan="2" > <table><tr><td class="nobordertable" width="100%">Track <b><i>steps walked</i></b> and <b><i>food eaten</i></b> by <div id="bname"><b>{{fname}} {{lname}}</b></div></td><td class="nobordertable"><canvas width="70" height="50" id="badge"></canvas></td></tr></table></td></tr>
+       <tr> 
+       
+         <td colspan="2" style="background:#3b5998;align:center;" >
+                
+                 <table>
+
+                     <tr>
+                       <td style="color:white;background:#3b5998;" class="nobordertable">Home|</td>
+                       <td style="color:white;background:#3b5998;" class="nobordertable"><a class="menuimage" alt="TeamProfile" style="cursor:pointer;color:white;">My profile</a>|</td>
+
+                       <td style="color:white;background:#3b5998;" class="nobordertable">Message Board|</td>
+
+                    </tr>
+               </table>
+              
+           
+         
+         </td>
+       
+       
+       </tr>
+       <tr><td style="width: 100%;height: 13%; background: #3b5998;" colspan="2" >
+         
+          
+           
+           <table><tr><td class="nobordertable" style="background:#3b5998;">
+           
+           
+                      <table style="border: 1px solid white;background:white;" >
+                      
+                             <tr>
+                                <td class="nobordertable" style="background:white;">
+                                    Avatar
+                                </td>
+                                </tr>
+                                <tr>
+                                <td class="nobordertable" style="background:white;font-size: 50%;">
+                                   
+                                  
+                                     
+                                      <img src='{{avatar}}' width="60" height="60"/><br/>
+                                      
+                                      <a href="#">Change</a>
+                                       
+                                   
+                                </td>
+                                </tr>
+                       </table>
+                         
+                         
+                         </td><td style="border:1px solid #3b5998 ;text-align:center;background:#8b9dc3;color:white;" width="100%">Track <b><i>steps walked</i></b> and <b><i>food eaten</i></b> by your <div id="bname"><b>{{relation}} "{{fname}} {{lname}}"</b></div></td>
+                         
+      
+                                                                 
+
+                       <td class="nobordertable" style="background:#3b5998;">
+                       
+                       <table style="border: 1px solid white;background:white;">
+                         <tr>
+                         <td class="nobordertable" style="text-align:left;">Badge</td></tr>
+                         <tr>
+                          <td class="nobordertable" style="background:white;font-size: 50%;">
+                            
+                               
+                                   <canvas width="60" height="60" id="badge" style="display: inline;"></canvas><br/>
+                                   &nbsp;
+                                
+                         </td></tr>
+                                
+                                
+                        </table>
+                       </td>
+                       
+                       
+                       
+                       </tr>
+       
+               </table>
+          
+          </td></tr>
 
        <tr>
 
@@ -2758,7 +3281,246 @@ function trackPage(page_id)
 
 </div> 
 
+<!--Profile-->
 
+
+   <div data-role="page" id="teamprofile">
+  <div data-role="header" style="background:#3b5998" >
+    <h1>Team Profile</h1>
+ 
+  </div>
+
+  <div data-role="main" class="ui-content">
+  
+  <table style="border: 1px solid blue;" class="main_interface_wrapper" align="center" border="0" width="100%">
+ 
+    <tr>
+   
+       <td>
+        Team Name:       
+      
+       </td>   
+   
+       <td>
+           <div id="team_container">
+             
+          </div>
+       </td>
+   
+   
+   
+    </tr>   
+ 
+ 
+    <tr>
+   
+       <td>
+        Avatar:       
+      
+       </td>   
+   
+       <td id="avatar_container">
+            
+            <img src='{{avatar}}' width="60" width="60"><br>Change
+            
+      
+       </td>
+   
+   
+   
+    </tr> 
+   
+   
+    <tr>
+   
+     <td>
+    
+     Attained Badge:
+    
+    
+     </td>
+    
+     <td>
+    
+         <img src='{{badge}}' width="60" width="60"> 
+    
+    
+     </td>  
+    
+    
+   
+   
+    </tr>
+   
+    <tr>
+   
+       <td>
+        Team Members       
+      
+       </td>   
+   
+       <td>
+           {{ifname}} {{ilname}}, and <br/>
+           {{fname}} {{lname}}
+                
+      
+       </td>
+       </tr>
+       <tr>
+           <td  colspan="2" id="save_profile">
+           
+           <a class="ui-btn ui-icon-action ui-btn-icon-left menuimage ui-disabled" ALT="Save Profile">Save</a>
+           
+           </td>
+       
+       </tr>
+       
+       <tr>
+       <td>Display Mode:</td>
+       
+       <td>
+       
+         <fieldset data-role="controlgroup" id="displaycontrolradio">
+
+            <label class="modelabel" data-tiletype="viewmode" for="viewmode">View</label><input type="radio" name="displaymode" value="View" class="view_class" id="viewmode" checked>
+
+            <label class="modelabel" data-tiletype="editmode" for="editmode">Edit</label><input type="radio" name="displaymode" value="Edit" class="edit_class" id="editmode">
+
+
+         </fieldset>
+         
+               <div data-role="popup" data-history="false" id="confirmProfileSavePopUp" class="ui-content">
+              <div data-role="header" >
+                   <h1 style="color:black">Confirm Save Dialog</h1>
+                </div>
+
+      <div data-role="main" class="ui-content">
+      <!--<a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn ui-icon-delete ui-btn-icon-notext ui-btn-right">Close</a>-->
+
+		
+
+	     <table align="center">
+
+		
+
+			      <tr>
+
+				    <td colspan=2 class="nobordertable">
+
+		             <div id="confirmProfileSaveText">
+		             
+		                   <p><b>Your team's profile has<br>
+		                    been changed.<i> Do you want to <br>
+		                    save the changes before leaving<br>
+		                    this page?</i></b></p>    
+		             </div>
+
+		       
+
+		        
+
+		         </td>
+		         </tr>
+		         
+		         <tr>
+		         
+
+				  <td class="nobordertable">
+				  
+              <a id="yesprofilesave" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b ui-icon-check ui-btn-icon-left">Save</a>
+				  
+				  
+				  </td>
+				  
+				  <td class="nobordertable">
+  <a id="noprofilesave" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b ui-icon-delete ui-btn-icon-left menuimage" data-rel="back" alt='MainPage'>Ignore</a>
+				  
+				     
+				  
+				  </td>
+				  
+				  
+
+				  </tr>
+
+				 
+
+					
+
+	    </table>
+	  </div>
+
+     <div data-role="footer">
+        <h1 style="color:black">Team's Profile Changed</h1>
+      </div>
+
+	</div>  
+       
+
+       </td>
+   
+   
+    </tr> 
+ 
+ 
+ 
+ 
+ 
+  </table>
+    
+        <div id="quitprofile">
+        
+              <!--<a data-transition="slide" class="ui-btn ui-corner-all ui-shadow ui-btn-inline menuimage ui-icon-check" alt="MainPage" >Main Page</a>-->
+              <a href="#confirmProfileSavePopUp" data-rel="popup" data-position-to="window" data-transition="fade" class="ui-btn ui-corner-all ui-shadow ui-btn-inline">Main Page</a>
+        
+        </div>
+  
+    
+    <!-- <a href="#confirmProfileSavePopUp" data-rel="popup" data-position-to="window" data-transition="fade" class="ui-btn ui-corner-all ui-shadow ui-btn-inline">Main Page</a> -->
+
+  </div>
+
+ 
+  <div data-role="footer" style="background:#3b5998" >
+    <h1>Track Close One's Wellness</h1>
+  </div>
+</div>
+
+<!--
+<div data-role="page" data-dialog="true" id="confirmProfileSave">
+  <div data-role="header">
+    <h1>I'm A Dialog Box!</h1>
+  </div>
+
+  <div data-role="main" class="ui-content">
+    <p>The dialog box is different from a normal page, it is displayed on top of the current page and it will not span the entire width of the page. The dialog has also an icon of "X" in the header to close the box.</p>
+    <a href="#teamprofile">Go to Profile Page</a>
+  </div>
+
+  <div data-role="footer">
+    <h1>Footer Text In Dialog</h1>
+  </div>
+</div> -->
+<!--
+<div data-role="page"  id="listAvatars">
+  <div data-role="header" style="background:#3b5998">
+    <h1>Change Avatar</h1>
+  </div>
+
+  <div data-role="main" class="ui-content">
+    <div id="avatartable">
+    
+    
+    
+    </div>
+ <a  class="ui-btn ui-icon-back ui-btn-icon-left menuimage" data-transition="slide" data-direction="reverse" alt="TeamProfile">Main Page</a>
+  </div>
+
+  <div data-role="footer">
+    <h1>Footer Text In Dialog</h1>
+  </div>
+
+-->
 
 
 
@@ -3246,13 +4008,6 @@ function trackPage(page_id)
 
 	</div>
 
-  
-
-  
-
-  
-
-  
 
   
 
@@ -3266,7 +4021,7 @@ function trackPage(page_id)
 
 			   <tr>
 
-			        <th colspan="2" background="{% static "django_facebook/images/meals/blank.gif" %}">Food Group</th>
+			      <th colspan="2" background="{% static "django_facebook/images/meals/blank.gif" %}">Food Group</th>
 
 					<th background="{% static "django_facebook/images/meals/blank.gif" %}">Portion Size
 
@@ -3312,19 +4067,10 @@ function trackPage(page_id)
 
 				  </td>
 
-				 			
-
-								  
-
 								  
 
 			 </tr>
-
-			 
-
-			 
-
-			 
+	 			 
 
 			 	<tr>
 
@@ -3951,7 +4697,7 @@ Your browser does not support the HTML5 canvas tag.</canvas>
 
 				     
 
-		          <b><i>Send an encouraging message to</i></b>: {{fname}} {{lname}}<br>
+		             <b><i>Send an encouraging message to</i></b>: {{fname}} {{lname}}<br>
 
 		         </br>
 
@@ -3964,10 +4710,7 @@ Your browser does not support the HTML5 canvas tag.</canvas>
 						
 
 				  </tr>
-
-				 
-
-					
+	
 
 			  </table>
 
@@ -4000,14 +4743,7 @@ Your browser does not support the HTML5 canvas tag.</canvas>
 </div> 
 
 
-
-
-
 <!--End of meal chart interface-->
-
-
-
-
 
  
 
@@ -4044,11 +4780,6 @@ Your browser does not support the HTML5 canvas tag.</canvas>
   </div>
 
 </div> 
-
-
-
-
-
 
 
 
