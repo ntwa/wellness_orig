@@ -41,6 +41,10 @@ class RetrieveIntermediary:
                     result["Lname"]=ben.beneficiary_lname
                     result["Mobile"]=ben.beneficiary_mobile
                     result["Id"]=ben.id
+                    result["Relation"]=ben.relation
+                    result["TeamName"]=ben.team_name
+                    result["Gender"]=ben.gender
+
                
                session.close()
                engine.dispose()

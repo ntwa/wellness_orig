@@ -12,6 +12,8 @@ import os
 from wellness.applogic.activity_module import PhysicalActivity,db,dbconn
 #from wellness.applogic.intermediary_module import Beneficiary
 from random import randint
+from wellness.applogic.pilot_start import PilotCommencement
+from wellness.applogic.food_beverage_module import FoodAndBeverage,Meal,MealComposition,db,dbconn
 
 def bubblesort(A,X,Y,Z,U,V,W,L,M,B,C):
   
@@ -58,15 +60,26 @@ class RetrievePoints:
             #create a Session
             Session = sessionmaker(bind=engine)
             session = Session()
+
+            pilotdateres=session.query(PilotCommencement).first()
+
+            if pilotdateres is None:
+                sys.exit
+            else:
+                datestarted=pilotdateres.datestarted
+
+
+
+
             if self.last_date_specified==1:
                 day=self.myjson["Day"]
                 if day == "Today":
                     day=datetime.date.today()
-                res=session.query(func.sum(PhysicalActivity.stepscounter).label("sum_steps")).filter(PhysicalActivity.beneficiary_id==beneficiary_id).filter(PhysicalActivity.datecaptured<=day).first()
+                res=session.query(func.sum(PhysicalActivity.stepscounter).label("sum_steps")).filter(PhysicalActivity.beneficiary_id==beneficiary_id).filter(PhysicalActivity.datecaptured>=datestarted).filter(PhysicalActivity.datecaptured<=day).first()
          
             else:
  
-                res=session.query(func.sum(PhysicalActivity.stepscounter).label("sum_steps")).filter(PhysicalActivity.beneficiary_id==beneficiary_id).first()
+                res=session.query(func.sum(PhysicalActivity.stepscounter).label("sum_steps")).filter(PhysicalActivity.beneficiary_id==beneficiary_id).filter(PhysicalActivity.datecaptured>=datestarted).first()
             
             if res.sum_steps==None:
                 sum_steps=0
@@ -118,108 +131,104 @@ class RetrievePoints:
 
         return (json.JSONEncoder().encode(result))
 
+    def countRecordedMeals(self):
+      result={}
+      try:
+        beneficiary_id=self.myjson["BeneficiaryID"]
+      except Exception as e:
+        sys.exit
+
+
+
+      try:
+        
+        engine=db
+        #create a Session
+        Session = sessionmaker(bind=engine)
+        session = Session()
+        res = session.query(func.count(FoodAndBeverage.id).label("mealscounter")).filter(FoodAndBeverage.beneficiary_id==beneficiary_id).first()
+        if res.mealscounter is None:
+          awarded_points=0;
+        else:
+          awarded_points=res.mealscounter
+
+
+
+        result["NumberOfMeals"]=awarded_points
+        result["Message"]="Meals count obtained successfully"
+
+
+      except Exception as e:
+        result["NumberOfMeals"]=-1
+        result["Message"]=e
+
+      session.close()
+      engine.dispose()
+      dbconn.close()
+
+      return (json.JSONEncoder().encode(result))
 
 
 
 
-       
-    
+ 
+
     def retrieveIntermediaryClickPoints(self):
-         result={}       
-         try:
-              #engine=create_engine('mysql://root:ugnkat@localhost/wellness', echo=False) 
-              engine=db
-              # create a Session
-              Session = sessionmaker(bind=engine)
-              session = Session()
-                                  
-
-              if self.last_date_specified==1:
-                  day=self.myjson["Day"]
-                  if day=="Today":
-                      day=datetime.date.today()
-                           
-                  res= session.query(func.sum(Points.scoredpoints).label("sum_points")).filter(Points.intermediary_id==self.intermediary_id).filter(Points.datecaptured<=day).first()
-              else:
-                  res= session.query(func.sum(Points.scoredpoints).label("sum_points")).filter(Points.intermediary_id==self.intermediary_id).first()
-              
-
-
-
-              retrieved_points_sum=0# initialize how many distinct dates are in the database
-              for retrieved_points_sum in res:
-                   break               
-              
-              
-              if res.sum_points is None:
-                   
-                   retrieved_points_sum="0"
-                   result["message"]="You have no points"
-                   result["points"]=int(retrieved_points_sum)
-              else: 
-                   result["message"]="You have some points so far."
-
-                   result["points"]=int(retrieved_points_sum)
- 
-
-
- 
-
-              if self.last_date_specified==1:
-                  res=session.query(func.min(Points.datecaptured).label("min_date")).filter(Points.intermediary_id==self.intermediary_id).filter(Points.datecaptured<=day).first()
-              else:
-                  res=session.query(func.min(Points.datecaptured).label("min_date")).filter(Points.intermediary_id==self.intermediary_id).first()
-              
-              min_date=res.min_date
-             
-  
-              
-              if self.last_date_specified==1:
-                  max_date=self.myjson["Day"]
-                  if max_date=="Today":
-                      max_date=datetime.date.today()
-                  else:
-
-                      max_date=datetime.datetime.strptime(max_date , '%Y-%m-%d').date()
-
-              else:
-                  max_date=datetime.date.today()
-                    
-              if min_date is None:
-                   dates_difference=1
-              else:
-                   delta=max_date-min_date
-                   dates_difference=delta.days+1
-                   if min_date>max_date:
-                       dates_difference=1
-
-
- 
-              result["dates_counter"]=dates_difference
-
-
-
-
-
- 
-              session.close()
-              engine.dispose()
-              dbconn.close()
-                   
-              return (json.JSONEncoder().encode(result))                   
-                                  
-         except Exception as e:
-                        
-              #print "Content-type: text/html\n" 
-              session.close()
-              engine.dispose() 
-              dbconn.close()
+        result={}       
+        try:
+                         
+            #engine=create_engine('mysql://root:ugnkat@localhost/wellness', echo=False) 
+            engine=db
+            # create a Session
+            Session = sessionmaker(bind=engine)
+            session = Session()
                                 
-              result["message"]="Error: %s"%e
-              print "Exception thrown in function getIntermediaryClickPoints(): %s"%e
-              print "The day captured=%s"%day
-              return (json.JSONEncoder().encode(result))
-              #sys.exit()    
+
+
+            res=session.query(func.count(distinct(Points.datecaptured)).label("sum_points")).filter(Points.intermediary_id==self.intermediary_id).first()
+
+
+            
+            retrieved_points_sum=0# initialize how many distinct dates are in the database
+                      
+            
+            
+            if res.sum_points is None:
+                
+                 
+                retrieved_points_sum="0"
+                result["message"]="You have no points"
+                result["points"]=int(retrieved_points_sum)
+            else: 
+                result["message"]="You have some points so far."
+                retrieved_points_sum=int(res.sum_points)
+                result["points"]=int(retrieved_points_sum)
+
+
+
+
+            session.close()
+            engine.dispose()
+            dbconn.close()
+                 
+            return (json.JSONEncoder().encode(result))                   
+                                 
+        except Exception as e:
+                       
+            #print "Content-type: text/html\n" 
+            session.close()
+            engine.dispose() 
+            dbconn.close()
+                              
+            result["message"]="Error: %s"%e
+            print "Exception thrown in function getIntermediaryClickPoints(): %s"%e
+            print "The day captured=%s"%day
+            return (json.JSONEncoder().encode(result))
+            #sys.exit()   
+
+
+
+   
               
     def retrieveIndividualBadge(self):
 
@@ -619,10 +628,11 @@ class RetrievePoints:
               
      
      
-#myjson={'Day':'Today'}
+#myjson={'Day':'Today',"BeneficiaryID":1}
 #obj=RetrievePoints(myjson,'katulentwa@gmail.com',1)
 
-#result=obj.getSteps('26')
+#result=obj.countRecordedMeals()
+#print result
 
 #print result
 

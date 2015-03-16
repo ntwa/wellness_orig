@@ -3,9 +3,9 @@ from sqlalchemy import create_engine, ForeignKey
 from sqlalchemy import Column, Date, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, backref
+from dbconn import connstr
 
-
-db = create_engine('mysql://root:ugnkat@localhost/wellness',pool_size=20, max_overflow=-1)
+db = create_engine(connstr,pool_size=20, max_overflow=-1)
 
 #db = create_engine('mysql://root:ugnkat@localhost/wellness')
 Base = declarative_base()

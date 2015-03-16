@@ -404,6 +404,12 @@ def saveTeamName(myjson):
     obj=RetrieveIntermediary(myjson)
     status=obj.saveTeamName()
     return status
+
+def saveAvatar(myjson):
+    obj=ManageAvatars(myjson)
+    status=obj.setAvatar()
+    return status
+
     
 
 
@@ -529,6 +535,12 @@ def dataupdate(request,command_id):
         myjson["BeneficiaryID"]=beneficiary_id
         status=saveTeamName(myjson)
         return HttpResponse(status,content_type='application/json')
+    elif command_id  == "CAV":
+        myjson=json.loads(request.body)
+        myjson["IntermediaryId"]=intermediary_id
+        status=saveAvatar(myjson)
+        return HttpResponse(status, content_type='application/json')
+
 
 @login_required
 def pagelogout(request):

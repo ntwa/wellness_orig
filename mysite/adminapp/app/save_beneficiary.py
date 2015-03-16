@@ -66,7 +66,9 @@ class SaveBeneficiary:
                lname=self.myjson["Lname"]
                mobile=self.myjson["Mobile"]
                intermediary_id=self.myjson["Intermediaryid"]
-                                  
+               relation=self.myjson["Relation"]
+               teamname=self.myjson["TeamName"]
+               gender=self.myjson["Gender"]                 
           except Exception as e:
                #print "Content-type: text/html\n" 
                result["message"]=e.message
@@ -102,7 +104,10 @@ class SaveBeneficiary:
                     beneficiaryrecord.beneficiary_fname=fname
                     
                     beneficiaryrecord.beneficiary_lname=lname
-                    #beneficiaryrecord.intermediary_id=intermediary_id
+                    beneficiaryrecord.beneficiary_mobile=mobile
+                    beneficiaryrecord.relation=relation
+                    beneficiaryrecord.team_name=teamname
+                    beneficiaryrecord.gender=gender
                     
                                 
                                              
@@ -135,7 +140,7 @@ class SaveBeneficiary:
                     
                     # Create weight
                     #new_food=FoodAndBeverage('KTLNTW00',datetime.date(1988,12,01))
-                    new_record=Beneficiary(fname,lname,mobile,intermediary_id)
+                    new_record=Beneficiary(fname,lname,mobile,intermediary_id,relation,teamname,gender)
                
                     session.add(new_record)
                     

@@ -266,6 +266,8 @@ sendMessage($("#weightcommentbox").val(),previous_day_displayed_weight,'Weight')
 var initialized=false;
 
 
+
+
 function initializeMenu(){
  
  $('<audio id="clickAudio"><source src="{%static "django_facebook/sound/checkout.wav" %}" type="audio/wav"><source src="{%static "django_facebook/sound/electronic.wav" %}" type="audio/wav"><source src="{%static "django_facebook/sound/checkout.wav" %}" type="audio/wav"></audio>').appendTo('body');
@@ -291,7 +293,7 @@ if(!initialized)
 
 			      case "TeamProfile":$.mobile.changePage("#teamprofile",{ transition: "slide", changeHash: false });break;
 			      case "MainPage":$.mobile.changePage( "#pageone", { transition: "slide", changeHash: false });break;
-
+               
 			      case "SaveProfileAndMainPage":checkModification();break;
 			      
                case "SaveProfile":saveProfile();break;
@@ -390,6 +392,13 @@ var changeSaveFlag=function()
 }
 */
 
+function changeAvatar(){
+
+$.mobile.changePage( "#listAvatars", { transition: "slide", changeHash: false });
+
+
+}
+
 var previous_team_name='{{teamname}}';
 var global_team_name=previous_team_name;
 var alertmsg="";
@@ -438,7 +447,13 @@ function saveProfile(){
 
 
 }
+function ignoreChanges()
+{
 
+$.mobile.changePage( "#pageone", { transition: "slide", changeHash: false });
+
+
+}
 
 
 function checkModification(){
@@ -446,10 +461,18 @@ function checkModification(){
    var team_name=$("#team_name").val();
    
    //$.mobile.changePage( "#confirmProfileSave", { transition: "pop", changeHash: false });
-     
-   
+     //beforesaveprofile
+    // <a href="#confirmProfileSavePopUp" data-rel="popup" data-position-to="window" data-transition="fade" class="ui-btn ui-corner-all ui-shadow ui-btn-inline">Main Page</a>
+   //alert(previous_team_name+"--"+team_name);
    if(previous_team_name!=team_name){
-   return 1;
+   //return 1;
+   
+      //$("#beforesaveprofile").attr("data-rel","popup");
+      //$("#beforesaveprofile").attr("data-position-to","window");
+      $('#confirmProfileSavePopUp').popup();
+      $('#confirmProfileSavePopUp').popup('open');
+     
+     
      // var answer=confirm("You have changed the team name from '"+previous_team_name+"' to '"+team_name+"'. Do you want to save these changes");
      /* if(answer)
       {
@@ -493,11 +516,33 @@ function checkModification(){
    }
    else
       {
+      
+            $("#editmode").prop( "checked", false ).checkboxradio( "refresh" );
+            $("#viewmode").prop( "checked", true ).checkboxradio( "refresh" );
+            
+            
+               var avatar_str="<img src='";
+               avatar_str=avatar_str+avatar;
+               avatar_str=avatar_str+"' width='60' height='60'><br>Change" ;
+               var save_profile_str="<a class='ui-btn ui-icon-action ui-btn-icon-left menuimage ui-disabled'>Save</a>"
+               var team_str="<input type='text' id='team_name' value='"+global_team_name+"' readonly>";
+               
+               $("#save_profile").off("vclick"); 
+               
+               
+               
+             $(".avatar_container").html('');
+             $("#team_container").html('');
+             $("#save_profile").html('');
+             
+             $(".avatar_container").append(avatar_str);
+             $("#save_profile").append(save_profile_str);
+             $("#team_container").append(team_str);      
        
       
        //$.mobile.changePage( "#pageone", { transition: "slide", changeHash: false });
-      
-      return 0;
+      $.mobile.changePage( "#pageone", { transition: "slide", changeHash: false });
+      //return 0;
      
       
       
@@ -510,10 +555,7 @@ function checkModification(){
 $(document).on('pagebeforeshow', '#teamprofile', function(){ 
 
 
-    $(document).on("popupafterclose", "#confirmProfileSavePopUp",function( event, ui ) {
-       $.mobile.changePage( "#pageone", { transition: "slide", changeHash: false });
-    
-    });
+
     
     
     });
@@ -546,7 +588,147 @@ $(document).on('pagebeforeshow', '#teamprofile', function(){
 });
 
 
+function setAvatar(avatar_id)
+{
 
+
+
+
+      
+      // $("#quitprofile").html('');
+    
+      //open ajax for saving
+       var jsonObjects={AvatarId:avatar_id};
+
+       jQuery.ajax({
+
+       url: "http://ict4d01.cs.uct.ac.za/facebook/dataupdate/CAV/",//change avatar
+
+      type: "POST",
+
+      contentType: "application/json",
+
+      data: JSON.stringify(jsonObjects),
+
+
+      success: function(result) {
+                        //save_flag=1;
+                        //repeating_modification=0;
+                         alert(result.D0); 
+                        var val =$("input[name=displaymode]:checked").val();
+                        //avatar_container
+                        var new_avatar="<img src='";
+                        new_avatar=new_avatar+avatars_array[avatar_id];
+                        if (val=="Edit")
+                            new_avatar=new_avatar+"' width='60' height='60'><br><a style='cursor:pointer;' onclick='changeAvatar();'>Change</a>";
+                        else
+                            new_avatar=new_avatar+"' width='60' height='60'><br>Change"
+                        
+                        
+                        $(".avatar_container").html('');
+                        $(".avatar_container").append(new_avatar);
+                     
+                        avatar=avatars_array[avatar_id];
+                        
+                        //now change all displaye avatars
+                        
+                        //previous_team_name=team_name;//the new team name is this
+                        //global_team_name=previous_team_name;
+                        
+                        //go back to the previous page
+                         $.mobile.changePage( "#teamprofile", { transition: "slide", changeHash: false });
+                        
+    
+                       
+                      },
+      async: false      
+      
+      
+       });
+       
+
+
+}
+
+var current_enabled_row_group_posn=0;
+function enableRowsGroup(arrowdirection)
+{
+
+  if(arrowdirection==1)
+  {
+  if(current_enabled_row_group_posn==0)
+  {
+  starting_posn=clusters-1;//go to the last cluster
+  
+  
+  }
+  else{
+       starting_posn=current_enabled_row_group_posn-1;// move three rows back
+  
+  
+  }
+  
+  }
+  else
+  {
+     if(arrowdirection==2)
+    {
+        if(current_enabled_row_group_posn==(clusters-1))
+  			{
+  					starting_posn=0;//go to the last cluster
+  
+  
+  			}
+  		else{
+       		starting_posn=current_enabled_row_group_posn+1;// move three rows back
+  
+  
+  			}
+  
+  
+  
+    }
+  }
+ 
+ current_enabled_row_group_posn=current_enabled_row_group_posn*3;
+  var end_posn=(current_enabled_row_group_posn)+3;
+
+   //hide the previous group of rows
+   for(var i=current_enabled_row_group_posn;i<end_posn;i++)
+   {
+      var row=".row";
+      row=row+i;
+      
+      $(row).hide();
+   
+   }
+   
+  starting_posn=starting_posn*3;
+  end_posn=starting_posn+3;
+   
+  //display a new group of rows
+  for(var i=starting_posn;i<end_posn;i++)
+  {
+    var row=".row";
+    row=row+i;
+   
+    $(row).show();
+   
+  }
+
+ 
+$("#avatarpagenumber").html('');
+
+var pageno="Page "+((starting_posn/3)+1);
+pageno=pageno+" out of "
+pageno=pageno+clusters;
+$("#avatarpagenumber").append(pageno);
+   
+
+current_enabled_row_group_posn=starting_posn/3;
+
+
+}
 
 
 
@@ -557,13 +739,15 @@ $(document).on("pageshow","#teamprofile",function(){
              
      });
      
- //$(document).on("pageshow","#listAvatars",function(){
- 
+var clusters=0;
+var avatars_array={};
+ $(document).on("pagecreate","#listAvatars",function(){
+   avatars_array={};
  //avatartable
           //$("#yesprofilesave").off("vclick");
           //$("#save_profile").off("vclick");
            //var jsonObjects={TeamName:team_name};
-/*
+
       jQuery.ajax({
 
       url: "http://ict4d01.cs.uct.ac.za/facebook/jsondata/GAAV/",//change team name
@@ -576,72 +760,210 @@ $(document).on("pageshow","#teamprofile",function(){
 
 
       success: function(res) {
-                        //save_flag=1;
-                        //repeating_modification=0;
-                        //alert(res.R00.D0); 
+
+                        var table="<table class='main_interface_wrapper' align='center'>";
+                        var counter=0;
+                        var item_counter=0;
+                        var table_row_closed=1;
+                        var rows=0;
+                        clusters=0;
+                        current_enabled_row_group_posn=0;
                         
-                        previous_team_name=team_name;//the new team name is this
-                        global_team_name=previous_team_name;
                         
+                        table=table+"<tr><td colspan=3 width='60%' id='avatarpagenumber'>";
+                        //table=table+"Page 1 out of "+clusters;       
+                                     
+                        table=table+"</td></tr>"; 
                         
-                        //change the back button to allow going back to the main page
-                        // var quit_profile_inner_element="<a data-transition='slide' class='ui-btn ui-corner-all ui-shadow ui-btn-inline menuimage ui-icon-check' alt='MainPage' >Main Page</a>";
-                         //$("#quitprofile").html('');
-                        // $("#quitprofile").append(quit_profile_inner_element);
-                        // initialized=false;
-                         //initializeMenu();
+                        for(x in res)
+                        {     
+                              
+                            
+                              if((counter%9)==0)
+                               {
+                                   
+                           
+                       
+                                                                       
+                                    if(!table_row_closed)
+                                     {
+                                        //closed any opened table row
+                                        table=table+"</tr>";
+                                        table_row_closed=1;
+                                     
+                                     }
+                                     
+                                     /*
+                                     table=table+"<tr class='row";
+                                     table=table+rows;
+                                     table=table+"' ><td colspan=3 width='60%'> Page "+(clusters+1);
+                                   
+                                     
+                                    
+                                     table=table+"</td></tr>";  
+                                      */
+                                   
+                                   
+                                   table=table+"<tr class='row"
+                                   table=table+rows;
+                                   table=table+"'><td width='60' height='60'>";
+                                  
+                                   rows++;
+                                   table_row_closed=0;
+                                   clusters++;// Number of pages
+                                 
+                               }
+                                   
+                                else
+                                {
+                                      
+                                    if((counter%3)==0){
+                                    //this means we are beginning a new row
+                                    
+                                    //now check if there any table row still open
+                                    
+                                    if(!table_row_closed)
+                                     {
+                                        //closed any opened table row
+                                        table=table+"</tr>";
+                                        table_row_closed=1;
+                                     
+                                     }
+                                     //now start a new table row
+                                     
+                                     table=table+"<tr class='row"
+                                     table=table+rows;
+                                     table=table+"'><td width='60' height='60'>";
+                                     
+                                     //table row opened
+                                     table_row_closed=0;
+                                     rows++;
+                                    
+                                    }
+                                    else{
+                                    
+                                        table=table+"<td width='60' height='60'>";
+                                    }
+                                    
+                                   
+                                
+                                }
+                               
+                                
+                                
+                                table=table+"<img src='"; 
+                                table=table+res[""+x+""]["D1"];
+                                table=table+"' style='cursor:pointer;' onclick='setAvatar(";
+                                table=table+res[""+x+""]["D0"];
+                                table=table+");' width='40'>";
+                                table=table+"</td>";
+                                avatars_array[res[""+x+""]["D0"]]=res[""+x+""]["D1"];
+
+                            counter++;
+                           
+                            
+                                    
+                        }
+                         if(!table_row_closed){
+                         
+                           		table_row_closed=1;
+                              	table=table+"</tr>";
+                         
+                            } 
+                            //provide links to other rows
+                            
+                            //table=table+"<tr><td colspan=3 width='60%' id='avatarpagenumber'>";
+                            //table=table+"Page 1 out of "+clusters;       
+                                     
+                            //table=table+"</td></tr>"; 
+                            
+                           
+             
+                            
+                            
+                            
+                           
+                            table=table+"<tr><td colspan=3 width='60%'><table width='100%'>";
+                            
+                            
+                            table=table+"<tr><td align='left' class='nobordertable' width='100%' id='avatarsleft'>";
+                            table=table+"<a href='javascript:enableRowsGroup(1)' class='ui-btn ui-corner-all ui-icon-arrow-l ui-btn-icon-notext'>Left Arrow Icon</a>";
+                            
+                            
+                            table=table+"</td>";
+                           
+                            table=table+"<td align='right' class='nobordertable' width='100%' id='avatarsright'>";
+                            table=table+"<a href='javascript:enableRowsGroup(2);' class='ui-btn ui-corner-all ui-icon-arrow-r ui-btn-icon-notext'>Arrow-r Icon</a>";
+                            
+                         
+                        
+                           
+                            table=table+"</td></tr>";
+                            
+
+                       
+                             
+                             
+                             
+                             
+               
+                             
+                           
+                           table=table+"</table></td></tr>";
+             
+                           table=table+"</table>";  
+                           
+                           $("#avatartable").html('');
+                           $("#avatartable").append(table);
+                           
+                                          //put the first table heading 
+                           $("#avatarpagenumber").append("Page 1 out of "+clusters);
+                        
+                            for(i=3;i<rows;i++){
+                            		var selected_row=".row";
+                            		selected_row=selected_row+i;
+                           		 $(selected_row).hide();
+                            
+                            }
+                        
+                        //previous_team_name=team_name;//the new team name is this
+                        //global_team_name=previous_team_name;
+
                        
                       },
       async: false     
       
       
-       });   */      
+       });        
           
           
  
            
              
-    /// });    
+     });    
      
-
+var avatar='{{avatar}}';
 $(document).on("pagecreate","#teamprofile",function(){
-
+    /*
     $(document).on("popupafteropen", "#confirmProfileSavePopUp",function( event, ui ) {
         //alert('popup');
         if(!checkModification())
           {
           
-         setTimeout(function(){
-          $( "#confirmProfileSavePopUp" ).popup( "close" );},1);
+          		setTimeout(function(){
+          		$( "#confirmProfileSavePopUp" ).popup( "close" );},1);
             
-           $.mobile.changePage( "#pageone", { transition: "slide", changeHash: false });
+           		$.mobile.changePage( "#pageone", { transition: "slide", changeHash: false });
           
           }
          else
          {
-         /*
-         //allow a dialog to do saving
-         $("#yesprofilesave").on("vclick", function(event){
-           event.stopPropagation(); 
-            saveProfile();
-            
-            //after saving change page
-            $.mobile.changePage( "#pageone", { transition: "slide", changeHash: false });
-         });
-         
-         */
+
          
          }
          
          
-    });
-
-
-
-
-
-
-
+    });*/
 
 
 
@@ -650,12 +972,75 @@ $(document).on("pagecreate","#teamprofile",function(){
  
           //allow a dialog to do saving
          $("#yesprofilesave").on("vclick", function(event){
-           event.stopPropagation(); 
+            event.stopPropagation(); 
             saveProfile();
+            
+            $("#editmode").prop( "checked", false ).checkboxradio( "refresh" );
+            $("#viewmode").prop( "checked", true ).checkboxradio( "refresh" );
+            
+            
+               var avatar_str="<img src='";
+               avatar_str=avatar_str+avatar;
+               avatar_str=avatar_str+"' width='60' height='60'><br>Change" ;
+               var save_profile_str="<a class='ui-btn ui-icon-action ui-btn-icon-left menuimage ui-disabled'>Save</a>"
+               var team_str="<input type='text' id='team_name' value='"+global_team_name+"' readonly>";
+               
+               $("#save_profile").off("vclick"); 
+               
+               
+               
+             $(".avatar_container").html('');
+             $("#team_container").html('');
+             $("#save_profile").html('');
+             
+             $(".avatar_container").append(avatar_str);
+             $("#save_profile").append(save_profile_str);
+             $("#team_container").append(team_str);      
+            
+            
+            
+            
+            
+            
             
             //after saving change page
             $.mobile.changePage( "#pageone", { transition: "slide", changeHash: false });
          });
+         
+        $("#noprofilesave").on("vclick", function(event){
+           event.stopPropagation(); 
+           $("#team_name").val(global_team_name);//reset the name back to the original name
+            $("#editmode").prop( "checked", false ).checkboxradio( "refresh" );
+            $("#viewmode").prop( "checked", true ).checkboxradio( "refresh" );
+            
+            
+               var avatar_str="<img src='";
+               avatar_str=avatar_str+avatar;
+               avatar_str=avatar_str+"' width='60' height='60'><br>Change" ;
+               var save_profile_str="<a class='ui-btn ui-icon-action ui-btn-icon-left menuimage ui-disabled'>Save</a>"
+               var team_str="<input type='text' id='team_name' value='"+global_team_name+"' readonly>";
+               
+               $("#save_profile").off("vclick"); 
+               
+               
+               
+             $(".avatar_container").html('');
+             $("#team_container").html('');
+             $("#save_profile").html('');
+             
+             $(".avatar_container").append(avatar_str);
+             $("#save_profile").append(save_profile_str);
+             $("#team_container").append(team_str);           
+            
+            
+            
+            
+            
+            //after saving change page
+            $.mobile.changePage( "#pageone", { transition: "slide", changeHash: false });
+         });
+         
+         
  
  
 
@@ -675,7 +1060,9 @@ $(".modelabel").on("vclick", function(event){
       
     if(val=="Edit"){
     
-       avatar_str="<img src='{{avatar}}' width='60' width='60'><br> <p class='menuimage' alt='ChangeAvatar' style='cursor:pointer;'>Change</p>" ;
+       avatar_str="<img src='";
+       avatar_str=avatar_str+avatar;
+       avatar_str=avatar_str+"' width='60' height='60'><br> <a style='cursor:pointer;' onclick='changeAvatar();'>Change</a>" ;
      
        save_profile_str="<a class='ui-btn ui-icon-action ui-btn-icon-left menuimage' id='save_profile' alt='SaveProfile'>Save</a>"
        
@@ -690,7 +1077,9 @@ $(".modelabel").on("vclick", function(event){
       
           if(val=="View"){
           
-               avatar_str="<img src='{{avatar}}' width='60' width='60'><br>Change" ;
+               avatar_str="<img src='";
+               avatar_str=avatar_str+avatar;
+               avatar_str=avatar_str+"' width='60' height='60'><br>Change" ;
                save_profile_str="<a class='ui-btn ui-icon-action ui-btn-icon-left menuimage ui-disabled'>Save</a>"
                team_str="<input type='text' id='team_name' value='"+global_team_name+"' readonly>";
                //$("#yesprofilesave").off("vclick");
@@ -699,13 +1088,13 @@ $(".modelabel").on("vclick", function(event){
       
       }
       
-      $("#avatar_container").html('');
+      $(".avatar_container").html('');
       $("#team_container").html('');
-       $("#save_profile").html('');
-      $("#avatar_container").append(avatar_str);
+      $("#save_profile").html('');
+      $(".avatar_container").append(avatar_str);
       $("#save_profile").append(save_profile_str);
       $("#team_container").append(team_str);
-      //displayActivityForInterval($(this).text());
+     
       
       if(val=="Edit"){
           
@@ -2985,6 +3374,7 @@ function Login(){
 var _gaq = _gaq || [];
 
     $(document).ready(function(e) {
+     $(".main_interface_wrapper").tinyscrollbar();
         (function() {
           var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
           ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + 
@@ -3152,11 +3542,11 @@ function trackPage(page_id)
                                 <td class="nobordertable" style="background:white;font-size: 50%;">
                                    
                                   
-                                     
-                                      <img src='{{avatar}}' width="60" height="60"/><br/>
+                                    <div class="avatar_container">
+                                      <img src='{{avatar}}' width="60" height="60"/><br>
                                       
-                                      <a href="#">Change</a>
-                                       
+                                      <a style='cursor:pointer;' onclick='changeAvatar();'>Change</a>
+                                    </div>
                                    
                                 </td>
                                 </tr>
@@ -3303,7 +3693,7 @@ function trackPage(page_id)
    
        <td>
            <div id="team_container">
-             
+                  <input type="hidden" id='team_name' value="{{teamname}}">
           </div>
        </td>
    
@@ -3319,9 +3709,9 @@ function trackPage(page_id)
       
        </td>   
    
-       <td id="avatar_container">
+       <td class="avatar_container">
             
-            <img src='{{avatar}}' width="60" width="60"><br>Change
+            <img src='{{avatar}}' width="60" width="60"><br></br> Change
             
       
        </td>
@@ -3433,7 +3823,7 @@ function trackPage(page_id)
 				  </td>
 				  
 				  <td class="nobordertable">
-  <a id="noprofilesave" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b ui-icon-delete ui-btn-icon-left menuimage" data-rel="back" alt='MainPage'>Ignore</a>
+  <a id="noprofilesave" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b ui-icon-delete ui-btn-icon-left">Ignore</a>
 				  
 				     
 				  
@@ -3471,7 +3861,9 @@ function trackPage(page_id)
         <div id="quitprofile">
         
               <!--<a data-transition="slide" class="ui-btn ui-corner-all ui-shadow ui-btn-inline menuimage ui-icon-check" alt="MainPage" >Main Page</a>-->
-              <a href="#confirmProfileSavePopUp" data-rel="popup" data-position-to="window" data-transition="fade" class="ui-btn ui-corner-all ui-shadow ui-btn-inline">Main Page</a>
+              <!--<a href="#confirmProfileSavePopUp" data-rel="popup" data-position-to="window" data-transition="fade" class="ui-btn ui-corner-all ui-shadow ui-btn-inline">Main Page</a>-->
+              <a id="beforesaveprofile" href="javascript:checkModification();"  class="ui-btn ui-icon-back ui-btn-icon-left" data-transition="slide" data-direction="reverse">Main Page</a>
+              
         
         </div>
   
@@ -3501,7 +3893,7 @@ function trackPage(page_id)
     <h1>Footer Text In Dialog</h1>
   </div>
 </div> -->
-<!--
+<
 <div data-role="page"  id="listAvatars">
   <div data-role="header" style="background:#3b5998">
     <h1>Change Avatar</h1>
@@ -3516,11 +3908,13 @@ function trackPage(page_id)
  <a  class="ui-btn ui-icon-back ui-btn-icon-left menuimage" data-transition="slide" data-direction="reverse" alt="TeamProfile">Main Page</a>
   </div>
 
-  <div data-role="footer">
-    <h1>Footer Text In Dialog</h1>
+  <div data-role="footer" style="background:#3b5998" >
+    <h1>Available Avatars</h1>
   </div>
+  
+ </div>
 
--->
+
 
 
 

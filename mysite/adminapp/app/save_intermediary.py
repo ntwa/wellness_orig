@@ -18,7 +18,7 @@ class SaveIntermediary:
                fname=self.myjson["Fname"]
                lname=self.myjson["Lname"]
                intermediary_id=self.myjson["Username"]
-               
+               mobile=self.myjson["Mobile"]
                         
                              
           except Exception:
@@ -54,9 +54,9 @@ class SaveIntermediary:
                     intermediaryrecord.intermediary_fname=fname
                     
                     intermediaryrecord.intermediary_lname=lname
-                    
+                    intermediaryrecord.mobile=mobile
                                 
-                                             
+                                                                   
                     allow_insert=0
                     
                     session.commit()
@@ -86,7 +86,7 @@ class SaveIntermediary:
                
                     # Create weight
                     #new_food=FoodAndBeverage('KTLNTW00',datetime.date(1988,12,01))
-                    new_record=Intermediary(intermediary_id,fname,lname)
+                    new_record=Intermediary(intermediary_id,fname,lname,mobile)
                          
                     session.add(new_record)
                
@@ -105,7 +105,7 @@ class SaveIntermediary:
           return (json.JSONEncoder().encode(result))
      
      
-#myjson={'Fname':'Gwamaka','Lname':'Katule','Username':'gkatule@hotmail.com'}
+#myjson={'Fname':'Gwamaka','Lname':'Katule','Username':'gkatule@hotmail.com','Mobile':'0738472538'}
 #obj=SaveIntermediary(myjson)
 #result=obj.saveIntermediaryInDB()
 #print result

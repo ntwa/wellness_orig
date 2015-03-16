@@ -5,11 +5,13 @@ from sqlalchemy.orm import relationship, backref
 from dbconn import connstr
 from sqlalchemy.pool import NullPool
 
-#db = create_engine(connstr ,pool_size=20, max_overflow=0)
+
+#db = create_engine(connstr,pool_size=20, max_overflow=0)
 db = create_engine(connstr,poolclass=NullPool)
 dbconn=db.connect()
-
+#db = create_engine('mysql://root:ugnkat@localhost/wellness')
 Base = declarative_base()
+#db = create_engine('mysql://root:ugnkat@localhost/wellness',)
 
        
 class Intermediary(Base):
@@ -17,17 +19,15 @@ class Intermediary(Base):
     intermediary_id = Column(String(50),primary_key=True)
     intermediary_fname=Column(String(50))
     intermediary_lname=Column(String(50))
-    mobile=Column(String(50))
+    mobile=Column(String(50))    
     #passwd= Column(String(50))
-    #beneficiary = relationship("Beneficiary", backref=backref("intermediaries", order_by=intermediary_id))
-    beneficiary = relationship("Beneficiary",uselist=False, backref="intermediaries")
-   
+    beneficiary = relationship("Beneficiary", backref=backref("intermediaries", order_by=intermediary_id))
+    #beneficiary = relationship("Beneficiary",uselist=False, backref="intermediaries")
     def __init__(self,intermediary_id,intermediary_fname,intermediary_lname,mobile):
         self.intermediary_id=intermediary_id
         self.intermediary_fname=intermediary_fname
         self.intermediary_lname=intermediary_lname
         self.mobile=mobile
-        
     def setId(self):
         pass
     def setName(self):
@@ -54,19 +54,21 @@ class Beneficiary(Base):
     beneficiary_lname=Column(String(50))
     beneficiary_mobile=Column(String(20))
     relation=Column(String(50))
-
-    gender=Column(String(10))
     team_name=Column(String(30))
+    gender=Column(String(10))
     intermediary_id = Column(String(50), ForeignKey("intermediaries.intermediary_id"))
     comment = relationship("Comment", backref=backref("beneficiaries", order_by="Comment.id"))
     
-    def __init__(self,beneficiary_fname,beneficiary_lname,beneficiary_mobile,intermediary_id):     
+    def __init__(self,beneficiary_fname,beneficiary_lname,beneficiary_mobile,intermediary_id,relation,team_name,gender):     
+
         self.beneficiary_fname=beneficiary_fname
         self.beneficiary_lname=beneficiary_lname
         self.beneficiary_mobile=beneficiary_mobile
         self.intermediary_id=intermediary_id 
-        
-        
+        self.relation=relation
+        self.team_name=team_name
+        self.gender=gender      
+         
     def setId(self):
         pass
     def getBeneficiaryId(self):
@@ -94,9 +96,9 @@ class Comment(Base):
     commentdetails = Column(String(500),nullable=False)
     date_captured = Column(Date,nullable=False)
     time_captured = Column(Time,nullable=False)
-    #event_start_date=Column(Date,nullable=False)
-    #event_end_date=Column(Date,nullable=False)
-    event_type=Column(Enum('Activity','Meal','Weight','Garden','FishTank','Badge','LeaderBoard'), nullable=False)
+    event_start_date=Column(Date,nullable=False)
+    event_end_date=Column(Date,nullable=False)
+    event_type=Column(Enum('Activity','Meal','Weight'), nullable=False)
     message_sent_status= Column(Boolean)
     beneficiary_id = Column(Integer, ForeignKey("beneficiaries.id"))
     

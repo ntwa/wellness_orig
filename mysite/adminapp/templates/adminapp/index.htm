@@ -14,13 +14,13 @@
      var fname=$("#intermediary_fname").val();
      var lname=$("#intermediary_lname").val();
      var username=$("#intermediary_username").val();
+     var mobile=$("#mobile").val();  
+     var jsonObjects={Fname:fname,Lname:lname,Username:username,Mobile:mobile};
      
-     var jsonObjects={Fname:fname,Lname:lname,Username:username};
-     
-     
+     alert(mobile);     
       
        jQuery.ajax({
-      					url: "http://ict4d01.cs.uct.ac.za/wellness/adminapp/cmd/SI/",
+      					url: "http://ict4d01.cs.uct.ac.za/adminapp/cmd/SI/",
      						type: "POST",
       					contentType: "application/json",
       					data: JSON.stringify(jsonObjects),
@@ -42,25 +42,27 @@
      var lname=$("#beneficiary_lname").val();
      var mobile=$("#beneficiary_mobile").val();
      var username=$("#intermediary_id").val();
-     
-     
+     var relation=$("#relation").val();
+     var teamname=$("#teamname").val();
+     var gender=$("#gender").val();    
+      
      if(username=="Choose Intermediary")
          return;
      
      
      
-     var jsonObjects={Fname:fname,Lname:lname,Mobile:mobile,Intermediaryid:username};
+     var jsonObjects={Fname:fname,Lname:lname,Mobile:mobile,Intermediaryid:username,Relation:relation,TeamName:teamname,Gender:gender};
      
      
       
        jQuery.ajax({
-      					url: "http://ict4d01.cs.uct.ac.za/wellness/adminapp/cmd/SB/",
+      					url: "http://ict4d01.cs.uct.ac.za/adminapp/cmd/SB/",
      						type: "POST",
       					contentType: "application/json",
       					data: JSON.stringify(jsonObjects),
       					success: function(result) {
       					alert(result.message);
-      					     $('#main_interface_wrapper').load('http://ict4d01.cs.uct.ac.za/wellness/adminapp/',function(){
+      					     $('#main_interface_wrapper').load('http://ict4d01.cs.uct.ac.za/adminapp/',function(){
                            
                            
                            });
@@ -89,13 +91,13 @@
      
       
        jQuery.ajax({
-      					url: "http://ict4d01.cs.uct.ac.za/wellness/adminapp/cmd/DB/",
+      					url: "http://ict4d01.cs.uct.ac.za/adminapp/cmd/DB/",
      						type: "POST",
       					contentType: "application/json",
       					data: JSON.stringify(jsonObjects),
       					success: function(result) {
       					alert(result.message);
-      				    $('#main_interface_wrapper').load('http://ict4d01.cs.uct.ac.za/wellness/adminapp/',function(){
+      				    $('#main_interface_wrapper').load('http://ict4d01.cs.uct.ac.za/adminapp/',function(){
                            
                            
                            });
@@ -123,7 +125,7 @@
      
       
        jQuery.ajax({
-      					url: "http://ict4d01.cs.uct.ac.za/wellness/adminapp/cmd/CAB/",
+      					url: "http://ict4d01.cs.uct.ac.za/adminapp/cmd/CAB/",
      						type: "POST",
       					contentType: "application/json",
       					data: JSON.stringify(jsonObjects),
@@ -134,7 +136,10 @@
                            $("#beneficiary_lname").val(result.Lname);
                            $("#beneficiary_mobile").val(result.Mobile);
                            
-;
+;                          $("#relation").val(result.Relation);
+                           $("#teamname").val(result.TeamName);
+                           $("#gender").val(result.Gender);
+                           
                            
       						
       						}
@@ -177,7 +182,7 @@
                                  
                                      
                                      
-                                            <form method="POST" action="http://ict4d01.cs.uct.ac.za/wellness/adminapp/cmd/SI/">
+                                            <form method="POST" action="http://ict4d01.cs.uct.ac.za/adminapp/cmd/SI/">
                                               
                                                 <tr>
                                                 
@@ -208,6 +213,16 @@
                                                
                                                    </td>
                                                 </tr>
+                                                 <tr>
+
+                                                    <td>Mobile</td>
+                                                   <td>
+                                                    <input type="text" name="mobile" id="mobile">
+
+
+                                                   </td>
+                                                </tr>
+
 
                                                 <tr>
                                                 
@@ -266,6 +281,52 @@
                                                
                                                    </td>
                                                 </tr>
+                                                 <tr>
+
+                                                    <td>Team Name</td>
+                                                   <td>
+                                                    <input type="text" name="teamname" id="teamname">
+
+
+                                                   </td>
+                                                  
+                                                </tr>
+
+                                                  <tr>
+
+                                                    <td>Relation</td>
+                                                   <td>
+                                                    <select id="relation" name="relation">
+                                                       <option>Mother</option>
+                                                       <option>Father</option>
+                                                       <option>Uncle</option>
+                                                       <option>Auntie</option>
+                                                       <option>Friend</option>
+                                                      
+
+
+                                                    </select>
+
+
+                                                   </td>
+
+                                                </tr>
+                                               <tr>
+
+                                                    <td>Gender</td>
+                                                   <td>
+                                                     <select id="gender" name="gender">
+                                                       <option>Male</option>
+                                                       <option>Female</option>
+                                                     
+
+                                                    </select>
+
+                                                   </td>
+                                                </tr>
+
+
+
                                                 
                                                 <tr>
                                                       <td>
@@ -320,7 +381,7 @@
                     
                              <table border="1">
                            
-                                           <form method="POST" action="http://ict4d01.cs.uct.ac.za/wellness/adminapp/cmd/AB/"> 
+                                           <form method="POST" action="http://ict4d01.cs.uct.ac.za/adminapp/cmd/AB/"> 
                                            
                                               
                                                 <th>
@@ -417,7 +478,7 @@
                 <tr>
                 
                       <td colspan="2" align="center"> 
-                      <form method="POST" action="http://ict4d01.cs.uct.ac.za/wellness/adminapp/cmd/LG/">{% csrf_token %} 
+                      <form method="POST" action="http://ict4d01.cs.uct.ac.za/adminapp/cmd/LG/">{% csrf_token %} 
                          <input type="submit" value="Logout">
                        </form>
                       </td>                
@@ -434,7 +495,7 @@
  
  
 
-       <form method="POST" action="http://ict4d01.cs.uct.ac.za/wellness/adminapp/">{% csrf_token %}
+       <form method="POST" action="http://ict4d01.cs.uct.ac.za/adminapp/">{% csrf_token %}
         <table id="main_interface_wrapper">
       
            <tr>
