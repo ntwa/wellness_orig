@@ -36,39 +36,45 @@ class BotanicalGarden:
         self.b_id=b_id
         self.i_id=i_id
         self.clickpoints=0
+        self.mealspoints=0
         self.stepspoints=0
         self.totalpoints=0
         self.trees=100
         self.flowers=68
-        self.rank=1
+      
         self.folder_name=folder_name
         self.file_name=""
         self.TreeFactor=float(0.0)
         self.FlowerFactor=float(0.0)
+        self.rank=10
     
     def getSteps(self):
         
         
         try:
-            varmyjson={'Day':'2000-01-01'}
+          varmyjson={'Day':'2000-01-01'}
 
 
-            stepsPointsObj=RetrievePoints(varmyjson,self.i_id,0)
-            ressteps=stepsPointsObj.getSteps(self.b_id)
-            ressteps=json.loads(ressteps)
+          stepsPointsObj=RetrievePoints(varmyjson,self.i_id,0)
+          ressteps=stepsPointsObj.getSteps(self.b_id)
+          ressteps=json.loads(ressteps)
 
-            stepspoints=int(ressteps["steps"]/(100*ressteps["dates_counter"]))
+          stepspoints=int(ressteps["steps"]/(ressteps["dates_counter"]))
         
                
         except Exception as e:
-            print e,", on function getSteps"
-            stepspoints=0
+          print e,", on function getSteps"
+          stepspoints=0
         
-                
+                 
         self.stepspoints=stepspoints
-        print self.stepspoints,self.b_id 
-                     
         
+
+
+                     
+      
+
+    '''
     def getIntermediaryPoints(self):
        
         try:
@@ -80,21 +86,50 @@ class BotanicalGarden:
           resclickpoints=clickPointsObj.retrieveIntermediaryClickPoints()
           resclickpoints=json.loads(resclickpoints)
 
-          clickpoints=int(resclickpoints["points"]/resclickpoints["dates_counter"])
-
+          #clickpoints=int(resclickpoints["points"]/resclickpoints["dates_counter"])
+           
 
           self.clickpoints=clickpoints
 
 
         except Exception as e:
-          print e
+          print "Exception thrown at %s"%e
           self.clickpoints=0
-        
+
+    '''
+    def retrieveTeamRank(self):
+      try:
+        varmyjson={'Day':'2012-01-01'}
+        teamrankobj=RetrievePoints(varmyjson,self.i_id,0)
+        resteamrank=teamrankobj.getCurrentRank()
+        resteamrank=json.loads(resteamrank)
+        teamrank=int(resteamrank["Rank"])
+        self.rank=teamrank
+      except Exception as e:
+        print e
+        self.rank=11
+      
+
+
+    def getNumberofMeals(self):
+      try:
+
+        varmyjson={'Day':'2012-01-01'}
+        mealscounterobj=RetrievePoints(varmyjson,self.i_id,0)
+        resmealscounter=mealscounterobj.countRecordedMeals(self.b_id)
+      
+        resmealscounter=json.loads(resmealscounter)
+        mealscounter=int(resmealscounter["NumberOfMeals"])
+        self.mealspoints=mealscounter
+      except Exception as e:
+        print e
+        self.mealspoints=0
+
     
 
     def plantFlowers(self):
      
-      highest_points=60.0
+      #highest_points=60.0
       try:
           
         path="/var/www/apps/static/django_facebook/images/garden/"
@@ -116,30 +151,31 @@ class BotanicalGarden:
         
         
        
-        highest_points=float(highest_points) 
-        self.clickpoints=float(self.clickpoints)
-        
+        #highest_points=float(highest_points) 
+        #self.clickpoints=float(self.clickpoints)
+        self.mealspoints=int(self.mealspoints)
+        flowerweight=float(11-self.rank)
+        factor_ratio=flowerweight/10
+
+
+        '''
         if self.clickpoints>highest_points:
           factor_ratio=1.0
         else:
           factor_ratio=float(self.clickpoints/highest_points)
         self.FlowerFactor=factor_ratio
 
-        
+        '''
         if factor_ratio==0.0:
             return im1
-      
-        
-        
-          
-        
+           
 
         width1=float(width1)
         height1=float(height1)
        
         
         #self.trees=self.trees*factor_ratio
-        self.flowers=self.flowers*factor_ratio
+        self.flowers=10*self.mealspoints # number of flowers in the garden
         self.flowers=int(round(self.flowers,0))
         
         flower=self.flowers
@@ -480,15 +516,18 @@ class BotanicalGarden:
          
           
          
-            
+          '''  
           if self.stepspoints>max_points:
               factor_ratio=1.0
           else:
 
               factor_ratio=float(self.stepspoints/max_points)
-          
+          '''
+
+          treeweight=11-self.rank
+          factor_ratio=float(float(treeweight)/float(10))
           self.TreeFactor=factor_ratio
-             
+        
           if factor_ratio==0.0:
               return im1
           
@@ -501,7 +540,8 @@ class BotanicalGarden:
           height1=float(height1)
          
           
-          self.trees=float(self.trees*factor_ratio)
+          #self.trees=float(self.trees*factor_ratio)
+          self.trees=float(10*(11-self.rank))
           self.trees=int(round(self.trees,0))
           
           
@@ -1001,14 +1041,16 @@ try:
           
           obj.getSteps()
           
-          obj.getIntermediaryPoints()
-
+          #obj.getIntermediaryPoints()
+          obj.getNumberofMeals()
+          obj.retrieveTeamRank()
+          '''
           if obj.clickpoints>60:
               obj.clickpoints=60
           if obj.stepspoints>100:
               obj.stepspoints=100
-
-          obj.totalpoints=obj.clickpoints+obj.stepspoints
+          '''
+          
           
            
           gardens.append(obj)
@@ -1051,12 +1093,7 @@ for one_garden in gardens:
   one_garden.file_name=filename
   filepathsave="%s%s.jpeg"%(path,filename)
   
-  #obj=BotanicalGarden(beneficiary_ids[posn])
-  
-  #obj.getSteps()
-  #obj.getGoal()
-  #points=obj.getIntermediaryPoints(orig_emails[posn])
-  #interm_points.append(points)
+
   
  
   

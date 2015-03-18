@@ -268,7 +268,7 @@ class RetrieveIntermediary:
                     data["D3"]="Relationship:%s"%ben_tuple.relation
                     data["D4"]="Gender:%s"%ben_tuple.gender
                     data["D5"]="Mobile:%s"%interm_tuple.mobile # an intermediary's phone number
-                    
+                    #data["D6"]="Team Name:%s"%ben_tuple.team_name
                     
                     intermediary_records["%s%s"%(Key1,counter)]=OrderedDict(sorted(data.items(), key=lambda t: t[0]))
                                        

@@ -10,12 +10,13 @@ from collections import OrderedDict
 from save_factors import ManageFactors
 import os
 from wellness.applogic.activity_module import PhysicalActivity,db,dbconn
-#from wellness.applogic.intermediary_module import Beneficiary
+
 from random import randint
 from wellness.applogic.pilot_start import PilotCommencement
 from wellness.applogic.food_beverage_module import FoodAndBeverage,Meal,MealComposition,db,dbconn
+from wellness.applogic.badges_module import Badges,AttainedUserBadges
 
-def bubblesort(A,X,Y,Z,U,V,W,L,M,B,C):
+def bubblesort(A,X,Y,Z,U,V,W,L,M,B,C,Q,R):
   
   for i in range( len( A ) ):
     for k in range( len( A ) - 1, i, -1 ):
@@ -31,6 +32,8 @@ def bubblesort(A,X,Y,Z,U,V,W,L,M,B,C):
         swap(M, k, k - 1 )
         swap(B, k, k - 1 )
         swap(C, k, k - 1 )
+        swap(Q, k, k - 1 )
+        swap(R, k, k - 1 )
   return A
  
 def swap( A, x, y ):
@@ -53,7 +56,7 @@ class RetrievePoints:
 
 
     def getSteps(self,beneficiary_id):
-        
+         
      
         try:
             engine=db
@@ -116,8 +119,8 @@ class RetrievePoints:
                     dates_difference=1
         
             result["dates_counter"]=dates_difference
-            
-
+                      
+ 
         except Exception as e:
             print "Exception thrown in function getSteps(): %s"%e 
             result["steps"]=0
@@ -128,17 +131,38 @@ class RetrievePoints:
         session.close()
         engine.dispose()
         dbconn.close()
-
+        
         return (json.JSONEncoder().encode(result))
 
-    def countRecordedMeals(self):
+
+    def getCurrentRank(self):
       result={}
       try:
-        beneficiary_id=self.myjson["BeneficiaryID"]
+
+        engine=db
+        #create a Session
+        Session = sessionmaker(bind=engine)
+        session = Session()
+
+        res2=session.query(AttainedUserBadges,Badges).filter(AttainedUserBadges.intermediary_id==self.intermediary_id).filter(AttainedUserBadges.status==1).filter(AttainedUserBadges.badge_id==Badges.rank).first()
+        if res2 is None:
+          rank=11# means there is no badge
+        else:
+          attainedrec,existingbadges=res2
+          rank=existingbadges.rank
+
+        result["Rank"]=rank
+        result["Message"]="Badge position retrieved successfully"
+
       except Exception as e:
-        sys.exit
+        print "Exception thrown: %s"%e
+        result["Rank"]=-1
+        result["Message"]=e
 
+      return (json.JSONEncoder().encode(result))
 
+    def countRecordedMeals(self,beneficiary_id):
+      result={}
 
       try:
         
@@ -167,10 +191,6 @@ class RetrievePoints:
       dbconn.close()
 
       return (json.JSONEncoder().encode(result))
-
-
-
-
  
 
     def retrieveIntermediaryClickPoints(self):
@@ -227,14 +247,14 @@ class RetrievePoints:
             #sys.exit()   
 
 
-
-   
               
     def retrieveIndividualBadge(self):
+
 
          result={}
 
          try:
+
 
 
               varmyjson={'Day':"Today"}
@@ -252,75 +272,74 @@ class RetrievePoints:
               resclickpoints=clickPointsObj.retrieveIntermediaryClickPoints()
               resclickpoints=json.loads(resclickpoints)
         
-              clickpoints=int(resclickpoints["points"]/resclickpoints["dates_counter"])
+              clickpoints=int(resclickpoints["points"])
         
-              if clickpoints>60:
-                  clickpoints=60
+              
         
         
               ressteps=clickPointsObj.getSteps(b_id)
               ressteps=json.loads(ressteps)
         
         
-              stepspoints=int(ressteps["steps"]/(100*ressteps["dates_counter"]))
+              stepspoints=int(ressteps["steps"]/ressteps["dates_counter"])
         
         
         
         
-              if stepspoints>100:
-                  stepspoints=100
+              
         
               badges_urls=[]
-        
-        
-              if stepspoints>=100:
-                  if clickpoints>=6:
-                      badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/queen.jpeg")
-                  else:
-                      badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/princess.jpeg")
-              elif stepspoints>=90:
-                  if clickpoints>=12:
-                      badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/princess.jpeg")
-                  else:
-                      badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/duchess.jpeg")
-              elif stepspoints>=80:
-                  if clickpoints>=18:
-                      badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/duchess.jpeg")
-                  else:
-                      badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/grandmaster.jpeg")
-              elif stepspoints>=70:
-                  if clickpoints>=24:
-                      badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/grandmaster.jpeg")
-                  else:
-                      badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/seniormaster.jpeg")
-        
-              elif stepspoints>=60:
-                  if clickpoints>=30:
-                      badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/seniormaster.jpeg")
-                  else:
-                      badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/master.jpeg")
-              elif stepspoints>=45:
-                  if clickpoints>=36:
-                      badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/master.jpeg")
-                  else:
-                      badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/juniormaster.jpeg")
-              elif stepspoints>=30:
-                  if clickpoints>=42:
-                      badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/juniormaster.jpeg")
-                  else:
-                      badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/seniorservant.jpeg")
-              elif stepspoints>=20:
-                  if clickpoints>=48:
-                      badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/seniorservant.jpeg")
-                  else:
-                      badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/servant.jpeg")
-              elif stepspoints>=10:
-                  if clickpoints>=54:
-                      badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/servant.jpeg")
-                  else:
-                      badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/slave.jpeg")
+
+              engine=db
+
+              #create a Session
+              Session = sessionmaker(bind=engine)
+              session = Session()
+
+              res2=session.query(AttainedUserBadges,Badges).filter(AttainedUserBadges.intermediary_id==self.intermediary_id).filter(AttainedUserBadges.status==1).filter(AttainedUserBadges.badge_id==Badges.rank).first()
+              
+              if res is None:
+                rank=11
+                badge="No Badge"
               else:
-                  badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/slave.jpeg")
+                attainedres,badgeres=res2
+                rank=badgeres.rank#get the current rank
+                badge=badgeres.badgename
+
+
+        
+        
+              if rank==1:
+                badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/queen.jpeg")
+              elif rank==2:
+                badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/princess.jpeg")
+  
+              elif rank==3:
+         
+                badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/duchess.jpeg")
+             
+              elif rank==4:
+                badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/grandmaster.jpeg")
+                
+              elif rank==5:
+                badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/seniormaster.jpeg")
+
+              elif rank==6:            
+                badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/master.jpeg")
+
+              elif rank==7:
+                badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/juniormaster.jpeg")
+  
+              elif rank==8:
+                badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/seniorservant.jpeg")
+
+              elif rank==9:
+                badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/servant.jpeg")
+              elif rank==10:
+                badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/slave.jpeg")
+              else:
+                badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/default.jpeg")
+
                        
 
               num=randint(2,49)
@@ -329,31 +348,18 @@ class RetrievePoints:
               res=json.loads(res)
                 
               sound_url=res["url"]              
-              result={"R00":{"D0":"Badge Acquired","D1":badges_urls[0],"D2":sound_url}}
+              result={"R00":{"D0":"Badge Acquired","D1":badges_urls[0],"D2":sound_url,"D3":badge,"D4":rank}}
 
               
               
 
          except Exception as e:
+              print e
               message="An exception was thrown in function retrieveIndividualScore(): %s"%e
-              result={"R00":{"D0":message,"D1":"http://ict4d01.cs.uct.ac.za/static/django_facebook/images/nobadge.jpeg","D2":"Error"}}
+              result={"R00":{"D0":message,"D1":"http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/default.jpeg","D2":"Error","D3":e,"D4":11}}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
+         
          return (json.JSONEncoder().encode(result))
 
 
@@ -405,12 +411,18 @@ class RetrievePoints:
         key2="D"    
         tree_array=[]
         flower_array=[]
+        fish_array=[]
+        fish_size_array=[]
         total_plants=[]
         urls=[]
         usage_points=[]
         bonus_points=[]
         badges=[]
         badges_urls=[]
+        team_members=[]
+      
+        team_name=[]
+
         for record in intermediaries_tuple.items():
              
              
@@ -435,7 +447,7 @@ class RetrievePoints:
                   result2=obj.isAssignedBeneficiary()
                   
                   beneficiary_tuple=json.loads(result2)
-                  #beneficiary_ids.append(beneficiary_tuple["Id"])
+                 
                   
                   team_identifier="%s_%s"%(beneficiary_tuple["Id"],garden_label)
                   beneficiary_ids.append(team_identifier)
@@ -445,8 +457,16 @@ class RetrievePoints:
                   
                   file_name="%s_%s"%(beneficiary_ids[posn],garden_label)
                   urls.append(file_path)
-                  #beneficiary_ids.append(beneficiary_tuple["Id"])
 
+
+                  
+                  team_name.append(beneficiary_tuple["TeamName"])
+                  
+                  one_team_members="(%s, %s)"%(intermediary_names[posn],beneficiary_names[posn]) # put together team members
+            
+
+
+                  team_members.append(one_team_members)
                  
                 
                    
@@ -457,10 +477,9 @@ class RetrievePoints:
                   resclickpoints=clickPointsObj.retrieveIntermediaryClickPoints()
                   resclickpoints=json.loads(resclickpoints)
                  
-                  clickpoints=int(resclickpoints["points"]/resclickpoints["dates_counter"])
+                  clickpoints=int(resclickpoints["points"])
                   
-                  if clickpoints>60:
-                      clickpoints=60
+                  clickpoints=clickpoints*1000
 
                 
                    
@@ -470,103 +489,51 @@ class RetrievePoints:
                   ressteps=json.loads(ressteps)
                    
 
-                  stepspoints=int(ressteps["steps"]/(100*ressteps["dates_counter"]))
+                  stepspoints=int(ressteps["steps"]/ressteps["dates_counter"])
                  
-                  if stepspoints>100:
-                      stepspoints=100
+                  
                   
                   bonus_points.append(stepspoints) 
                   
                      
 
-                  trees=int(stepspoints*100.0/100)
-                  flowers=int(clickpoints*67.0/60)
+                  resbadge=self.retrieveIndividualBadge()
+                  resbadge=json.loads(resbadge)
+                  
+                  #get badge name for this individual
+                  badges.append(resbadge["R00"]["D3"])
+
+                  #get a badge url for this person
+                  badges_urls.append(resbadge["R00"]["D1"])
+
+
+                  trees=int(10*(11-resbadge["R00"]["D4"])) # the number of trees in a garden
+                  fish=int(11-resbadge["R00"]["D4"]) # the number of fish in a tank
+                  fishsize=float(float(fish)/float(10)) # fish size is determined by how many fish are in the tank. The more fish the bigger the size. This weill also be used to detrmine the quality of a fish tank
+                  
+
+
+                  resmealcounter=self.countRecordedMeals(beneficiary_tuple["Id"])
+                  resmealcounter=json.loads(resmealcounter)
+
+                  flowers=(10*resmealcounter["NumberOfMeals"]) # number of flowers in the garden
+
+                  
                   #print file_name,trees, flowers
                   tree_array.append(trees)
                   flower_array.append(flowers)
+                  fish_array.append(fish)
+                  fish_size_array.append(fishsize)
                   total=trees+flowers
+
                   total_plants.append(total)
-                  
-                  if stepspoints>=100:
-                      if clickpoints>=6:
-                         badges.append("Queen/King")
-                         badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/queen.jpeg")
-                      else:
-                         badges.append("Princess/Prince")
-                         badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/princess.jpeg")
-                  elif stepspoints>=90:
-                      if clickpoints>=12:
-                         badges.append("Princess/Prince")
-                         badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/princess.jpeg")
-                      else:
-                         badges.append("Duchess/Duke") 
-                         badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/duchess.jpeg")
-                  elif stepspoints>=80:
-                      if clickpoints>=18:
-                         badges.append("Duchess/Duke")
-                         badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/duchess.jpeg")
-                      else:
-                         badges.append("Grand Master")
-                         badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/grandmaster.jpeg")
-                  elif stepspoints>=70:
-                      if clickpoints>=24:
-                         badges.append("Grand Master")
-                         badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/grandmaster.jpeg")
-                      else:
-                         badges.append("Senior Master")
-                         badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/seniormaster.jpeg")
-
-                  elif stepspoints>=60:
-                      if clickpoints>=30:
-                         badges.append("Senior Master")
-                         badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/seniormaster.jpeg")
-                      else:
-                         badges.append("Master")
-                         badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/master.jpeg")
-                  elif stepspoints>=45:
-                      if clickpoints>=36:
-                         badges.append("Master")
-                         badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/master.jpeg")
-                      else:
-                         badges.append("Junior Master")               
-                         badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/juniormaster.jpeg")
-                  elif stepspoints>=30:
-                      if clickpoints>=42:
-                         badges.append("Junior Master")
-                         badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/juniormaster.jpeg")
-                      else:
-                      
-                         badges.append("Senior Servant")
-                         badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/seniorservant.jpeg")
-                  elif stepspoints>=20:
-
-                      if clickpoints>=48:
-                         badges.append("Senior Servant")
-                         badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/seniorservant.jpeg")
-                      else:
-                         badges.append("Servant") 
-                         badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/servant.jpeg")
-                  elif stepspoints>=10:
-                      if clickpoints>=54:
-                         badges.append("Servant")
-                         badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/servant.jpeg")
-                      else:
-                         badges.append("Lowest Badge")
-                         badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/slave.jpeg")
-                  else:
-                      badges.append("Lowest Badge")
-                      badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/slave.jpeg")
-                     
-
-                   
                   posn=posn+1
                   
-                 
         posn=0      
       
     
            
-        bubblesort(total_plants,urls,beneficiary_ids,tree_array,flower_array,intermediary_names,beneficiary_names,usage_points,bonus_points,badges,badges_urls)
+        bubblesort(total_plants,urls,beneficiary_ids,tree_array,flower_array,intermediary_names,beneficiary_names,usage_points,bonus_points,badges,badges_urls,fish_array,fish_size_array)
         posn=0
         file_path_alt="django_facebook/images/garden/blank.jpg"
         for beneficiary in beneficiary_ids:
@@ -576,10 +543,13 @@ class RetrievePoints:
             else:
               key1="R"     
               
-            urls_tuple[key2+"%s"%second_posn]="(%s, %s)"%(intermediary_names[posn],beneficiary_names[posn])
+            urls_tuple[key2+"%s"%second_posn]="%s"%team_name[posn] # D0 team name
             second_posn=second_posn+1  
+
+            urls_tuple[key2+"%s"%second_posn]="%s"%team_members[posn] # D1 team members
+            second_posn=second_posn+1 
             
-            urls_tuple[key2+"%s"%second_posn]=urls[posn]
+            urls_tuple[key2+"%s"%second_posn]=urls[posn] #D2 url for garden
             if total_plants[posn]==0:
               urls_tuple[key2+"%s"%second_posn]=file_path_alt
               
@@ -587,31 +557,40 @@ class RetrievePoints:
             
             
 
-            urls_tuple[key2+"%s"%second_posn]="%s"%tree_array[posn]
+            urls_tuple[key2+"%s"%second_posn]="%s"%tree_array[posn]  #D3 Number of trees
             second_posn=second_posn+1
             
-            urls_tuple[key2+"%s"%second_posn]="%s"%flower_array[posn]
+            urls_tuple[key2+"%s"%second_posn]="%s"%flower_array[posn]  # D4 Number of flowers
             second_posn=second_posn+1
             
-            urls_tuple[key2+"%s"%second_posn]="%s"%total_plants[posn]
+            urls_tuple[key2+"%s"%second_posn]="%s"%total_plants[posn]  #D5 Total number of plants including flowers and tree
             second_posn=second_posn+1
             
 
-            urls_tuple[key2+"%s"%second_posn]="%s"%usage_points[posn]
+            urls_tuple[key2+"%s"%second_posn]="%s"%usage_points[posn]  #D6 Number of days an application has been used multiply by 1000 by a team. 
             second_posn=second_posn+1
  
  
-            urls_tuple[key2+"%s"%second_posn]="%s"%bonus_points[posn]
+            urls_tuple[key2+"%s"%second_posn]="%s"%bonus_points[posn]  #D7 average steps walked by an individual
             second_posn=second_posn+1
 
-            urls_tuple[key2+"%s"%second_posn]="%s"%badges[posn]
+            urls_tuple[key2+"%s"%second_posn]="%s"%badges[posn] #D8 Badge name
             second_posn=second_posn+1
             
-            urls_tuple[key2+"%s"%second_posn]="%s"%badges_urls[posn]
+            urls_tuple[key2+"%s"%second_posn]="%s"%badges_urls[posn] #D9 Badge Url
             second_posn=second_posn+1
 
 
-            urls_tuple[key2+"%s"%second_posn]="%s"%beneficiary
+            urls_tuple[key2+"%s"%second_posn]="%s"%beneficiary  #D10 Beneficiary ID
+            second_posn=second_posn+1
+
+
+
+            urls_tuple[key2+"%s"%second_posn]="%s"%fish_array[posn] # D11 Number of fish in the tank.
+            second_posn=second_posn+1
+
+
+            urls_tuple[key2+"%s"%second_posn]="%s"%fish_size_array[posn] #D12 size of fish in the tank
             second_posn=second_posn+1
             
 
@@ -628,9 +607,9 @@ class RetrievePoints:
               
      
      
-#myjson={'Day':'Today',"BeneficiaryID":1}
-#obj=RetrievePoints(myjson,'katulentwa@gmail.com',1)
-
+#obj=RetrievePoints(myjson,'ntwakatule',1)
+#result=obj.retrieveScoreGardensUrls()
+#result=obj.getCurrentRank()
 #result=obj.countRecordedMeals()
 #print result
 
