@@ -6,13 +6,16 @@ import sys,json
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from wellness.applogic.intermediary_module import Intermediary,Beneficiary,Comment,db,dbconn
+from save_sms_feedback import QueueFeedback
+from collections import OrderedDict
+from manage_avatars import ManageAvatars
 
 
 class SaveComment:
-     def __init__(self,myjson,b_id):
+     def __init__(self,myjson,b_id,i_id):
           self.myjson=myjson
           self.b_id=b_id
-
+          self.i_id=i_id
      def first_day_of_month(self,d):
           return datetime.date(d.year, d.month, 1)
       
@@ -20,17 +23,109 @@ class SaveComment:
           t=(calendar.monthrange(d.year,d.month))
           return datetime.date(d.year,d.month,t[1])
 
+     def getComments(self,event_type):
+      result={}
+
+
+      try:
+
+        engine=db
+                    # create a Session
+        Session = sessionmaker(bind=engine)
+                    
+        session = Session()
+
+        res=session.query(Comment,Beneficiary).filter(Beneficiary.id==Comment.beneficiary_id).filter(Beneficiary.id==self.b_id).filter(Comment.event_type==event_type).all()
+
+        key2="Q"
+        first_posn=0
+        if res is None:
+          result["P00"]={"Q0":-1,"Q1":"No comments!"}
+          return (json.JSONEncoder().encode(OrderedDict(sorted(result.items(), key=lambda t: t[0]))))
+        for comment,beneficiary in res:
+          
+          if first_posn<10:
+            key1="P0"
+          else:
+            key1="P" 
+
+        
+          comment_tuple={}
+          second_posn=0
+     
+          intermediary_id=comment.teamcommented
+
+          #Get the team where the commenter belongs to
+          res2=session.query(Beneficiary).filter(Beneficiary.intermediary_id==comment.teamcommented).first()
+          if res2 is None:
+            result["P00"]={"Q0":-1,"Q1":"No comments!"}
+            return (json.JSONEncoder().encode(OrderedDict(sorted(result.items(), key=lambda t: t[0]))))
+          else:
+            teamcommented=res2.team_name
+
+           
+          
+
+          #Find the avatar of the team made the comments
+
+          avatarmyjson={"IntermediaryId":intermediary_id}
+          obj=ManageAvatars(avatarmyjson)
+          res=obj.getAvatarUrl()
+          avatardata=json.loads(res)
+          avatarurl=avatardata["AvatarUrl"]
+
+          #the avatar should go first
+          comment_tuple[key2+"%s"%second_posn]="%s"%avatarurl
+          second_posn=second_posn+1
+
+
+
+
+          # the name should come next
+          comment_tuple[key2+"%s"%second_posn]="%s"%teamcommented
+          second_posn=second_posn+1
+
+
+
+          #comments should be listed last
+          comment_tuple[key2+"%s"%second_posn]="%s"%comment.commentdetails
+          second_posn=second_posn+1  
+
+
+
+
+
+
+
+
+
+
+          result[key1+"%s"%first_posn]=(OrderedDict(sorted(comment_tuple.items(), key=lambda t: t[0])))
+          first_posn=first_posn+1 
+
+
+
+        return (json.JSONEncoder().encode(OrderedDict(sorted(result.items(), key=lambda t: t[0]))))
+        
+
+
+
+
+
+      except Exception as e:
+        result["P00"]={"Q0":e,"Q1":-1,"Q2":-1}
+        return (json.JSONEncoder().encode(result))
+
 
      def saveCommentInDB(self):
           
           commentdetails="" 
           date_captured="" 
           time_captured="" 
-          event_start_date=""
-          event_end_date=""
           event_type=""
           message_sent_status=""
           result={}
+          teamname=""
           allow_insert=1
           
           # Get data from fields
@@ -39,72 +134,53 @@ class SaveComment:
                commentdetails=self.myjson["MessageBody"] 
                date_captured=datetime.date.today()# today's date
                time_captured=time.strftime("%H:%M:%S")
-               day=self.myjson["Day"]
-               #event_start_date=self.myjson["StartDate"] 
-               #event_end_date=self.myjson["EndDate"] 
+               teamname=self.myjson["TeamName"]
+               optionaltext=self.myjson["OptionalText"]
                event_type=self.myjson["EventType"]
                message_sent_status=False          
                
 
                
                 
-          except Exception:
+          except Exception as e:
                #print "Content-type: text/html\n" 
-               result["message"]='There was an error in processing a JSON object'
+               result["message"]='There was an error in processing a JSON object:%s'%e
                return (json.JSONEncoder().encode(result)) 
                #sys.exit() 
           
 
-          if (commentdetails=="None") and (day=="None") and (event_type=="None"):
+          if (commentdetails=="None")  and (event_type=="None"):
                #print "Content-type: text/html\n" 
                result["message"]="There is an error in saving your message due to missing of some information"
                return (json.JSONEncoder().encode(result)) 
-               #sys.exit()
 
-               #sys.exit()
-
-
-
-          if day=="Today":
-               event_start_date = datetime.date.today()
-               event_end_date = datetime.date.today()             
-               
-          elif day=="This week":
-               #from monday up to sunday. 
-               day_of_week = datetime.datetime.today().weekday()
-               event_start_date =datetime.date.today()-datetime.timedelta(days=day_of_week)#monday
-               event_end_date=event_start_date+datetime.timedelta(days=6)#sunday
-     
-              
-          elif day=="Last week":
-               day_of_week = datetime.datetime.today().weekday()
-               event_end_date = datetime.date.today()-datetime.timedelta(days=(day_of_week+1))#last sunday. Subtract today from the number of days that have passed since sunday
-               event_start_date  = event_end_date-datetime.timedelta(days=6)# Monday of the previous week.            
-               
-          elif day=="This month":
-               #from 1st of this month to end of last month
-               event_start_date =self.first_day_of_month(datetime.date.today())
-               event_end_date=self.last_day_of_month(datetime.date.today())
-          
-               
-          elif day=="Last month":
-               #from 1st of last month to end of last month
-               #startdate=self.first_day_of_month(first_day_of_month(datetime.date.today())-datetime.timedelta(days=1))
-               event_start_date =self.first_day_of_month(self.first_day_of_month(datetime.date.today())-datetime.timedelta(days=1))               
-               event_end_date=self.last_day_of_month(event_start_date)
-          
-          elif day=="Last three months":
-               # go two months back
-               first_day_last_month=self.first_day_of_month(self.first_day_of_month(datetime.date.today())-datetime.timedelta(days=1))
-               event_start_date =self.first_day_of_month(first_day_last_month-datetime.timedelta(days=1))# subract 1 day to get to the end of a previous month before last month and get the first day of that month
-               event_end_date=self.last_day_of_month(datetime.date.today())#
-          else:
-               result["message"]="Error: Failed to save a message."
-               return (json.JSONEncoder().encode(result))              
 
 
                
-          
+          try:
+            if teamname=="None":
+              b_id=self.b_id
+            else:
+              #get beneficiary id of the team that owns an event being commmented
+              engine=db
+              Session = sessionmaker(bind=engine)
+                    
+              session = Session()
+
+              res=session.query(Beneficiary).filter(Beneficiary.team_name==teamname).first()
+              if res is None:
+                result["message"]="The team you are trying to comment doesn't exist"
+                return (json.JSONEncoder().encode(result))
+              else:
+                b_id=res.id
+
+
+
+
+
+
+          except Exception as e:
+            pass
           if allow_insert==1:           
                try:
                     
@@ -119,7 +195,7 @@ class SaveComment:
                     # Create food
                     #new_food=FoodAndBeverage('KTLNTW00',datetime.date(1988,12,01))
                     
-                    new_comment=Comment(self.b_id,commentdetails,date_captured,time_captured,event_start_date,event_end_date,event_type,message_sent_status)
+                    new_comment=Comment(b_id,self.i_id,commentdetails,date_captured,time_captured,event_type,message_sent_status)
                                             
                     
                     
@@ -130,6 +206,48 @@ class SaveComment:
                     
                     
                     session.commit()
+
+
+
+
+                    if teamname=="None":
+
+                      res=session.query(Intermediary,Beneficiary).filter(Intermediary.intermediary_id==Beneficiary.intermediary_id).filter(Intermediary.intermediary_id==self.i_id).first()
+                      if res is None:
+                        result["message"]="Error failed to send a message"
+                        return (json.JSONEncoder().encode(result))
+                      else:
+                        interm,ben=res
+                        ben_mobile=ben.beneficiary_mobile
+                        interm_mobile=interm.mobile
+                        feedback_message=commentdetails
+
+                        myjson2={"recipient":ben_mobile,"message":feedback_message}
+                        obj=QueueFeedback(myjson2)
+                        res=obj.saveFeedbackInDB()
+                        
+                    
+                    else:
+                      res=session.query(Intermediary,Beneficiary).filter(Intermediary.intermediary_id==Beneficiary.intermediary_id).filter(Beneficiary.team_name==teamname).first()
+                      if res is None:
+                        result["message"]="Error: You can't leave a comment to this team since it doesn't exist"
+                        return (json.JSONEncoder().encode(result))            
+                      else:
+                        interm,ben=res
+                        interm_mobile=interm.mobile
+                        ben_mobile=ben.beneficiary_mobile
+                        team_name=ben.team_name
+                        feedback_message=optionaltext
+                        
+                        myjson2={"recipient":interm_mobile,"message":feedback_message}
+                        obj=QueueFeedback(myjson2)
+                        res=obj.saveFeedbackInDB()
+                       
+                        myjson2={"recipient":ben_mobile,"message":feedback_message}
+                        obj=QueueFeedback(myjson2)
+                        res=obj.saveFeedbackInDB()
+
+
                     session.close()
                     engine.dispose()
                     dbconn.close()                 
@@ -143,13 +261,12 @@ class SaveComment:
                     result["message"]=e
                     return (json.JSONEncoder().encode(result)) 
                
-               result["message"]="The message was saved successfully. It will be delivered  later."
+               result["message"]="Your comment has been added. Also the message has been sent to team %s to notify them of your new comment"%team_name;
                return (json.JSONEncoder().encode(result))
      
      
-#myjson={"MessageBody":"Hi mom. You have reached your activity goal this week. Keep it up!!","Day":"This month","EventType":"Meal"}
-
-
-#obj=SaveComment(myjson,8)
+#myjson={"MessageBody":"Hi mom. You have reached your activity goal this week. Keep it up!!","EventType":"Aquarium", "TeamName":"None","OptionalText":"Team y has left a comment in you aquarium"}
+#obj=SaveComment(myjson,2,'pacomeambasa')
 #msg=obj.saveCommentInDB()
+#msg=obj.getComments("Aquarium")
 #print msg

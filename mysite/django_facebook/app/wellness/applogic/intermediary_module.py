@@ -92,24 +92,24 @@ class Beneficiary(Base):
 
 class Comment(Base):
     __tablename__="comments"
-    id=Column(Integer, primary_key=True)
+    id=Column(Integer, primary_key=True)    
+    teamcommented=Column(String(50),nullable=False)
     commentdetails = Column(String(500),nullable=False)
     date_captured = Column(Date,nullable=False)
     time_captured = Column(Time,nullable=False)
-    event_start_date=Column(Date,nullable=False)
-    event_end_date=Column(Date,nullable=False)
-    event_type=Column(Enum('Activity','Meal','Weight'), nullable=False)
+   # event_start_date=Column(Date,nullable=False)
+   # event_end_date=Column(Date,nullable=False)
+    event_type=Column(Enum('Activity','Meal','Weight','Aquarium','Garden'), nullable=False)
     message_sent_status= Column(Boolean)
     beneficiary_id = Column(Integer, ForeignKey("beneficiaries.id"))
     
-    def __init__(self,beneficiary_id,commentdetails,date_captured,time_captured,event_start_date,event_end_date,event_type,message_sent_status):
+    def __init__(self,beneficiary_id,teamcommented,commentdetails,date_captured,time_captured,event_type,message_sent_status):
         
         self.beneficiary_id=beneficiary_id
+        self.teamcommented=teamcommented
         self.commentdetails=commentdetails
         self.date_captured=date_captured
         self.time_captured=time_captured
-        self.event_start_date=event_start_date
-        self.event_end_date=event_end_date
         self.event_type=event_type
         self.message_sent_status=message_sent_status
         

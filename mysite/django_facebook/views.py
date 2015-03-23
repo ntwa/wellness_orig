@@ -23,7 +23,6 @@ import os
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from collections import OrderedDict
-
 from django.conf import settings
 from django.contrib import messages
 from django.http import Http404
@@ -36,14 +35,8 @@ import logging
 import json,sys,urllib2
 import datetime,calendar
 from django.contrib.auth import logout
-#content = urllib2.urlopen("https://graph.facebook.com/v2.1/?id=http://ict4d01.cs.uct.ac.za/wellness/facebook/example/").read()
-#from open_facebook.api import OpenFacebook
 
-#graph = OpenFacebook("my_access_token")
 
-#if there is an error then check if an object is imported above before being used
-
-#view for facebook authentication
 
 logger = logging.getLogger(__name__)
 
@@ -93,6 +86,12 @@ def retrieveScoreTanks(myjson,intermediary_id):
     result={}
     obj=RetrievePoints(myjson,intermediary_id,1)
     status=obj.retrieveScoreGardensUrls()
+    return status
+
+def retrieveAquariumComments(myjson,intermediary_id):      
+    obj=RetrievePoints(myjson,intermediary_id,1) 
+    status=obj.getUpdatedAquariumComments()
+
     return status
 
 
@@ -175,8 +174,9 @@ def dataloader(request,command_id):
     #myjsonpoints={"points":3}
     #myjsonclickscounter={"clickscounter":1}
     
-     
+    
     try:
+        
         try:
             
             #intermediary_id=request.session['username']
@@ -275,10 +275,10 @@ def dataloader(request,command_id):
         return HttpResponse(status, mimetype='application/json')
     
     
-    
-
+   
     try:
         myjson=json.loads(request.body)
+   
         obj=SavePoints(myjson,intermediary_id)
         status=obj.savePointsInDB()
         
@@ -346,11 +346,6 @@ def dataloader(request,command_id):
         #result["message"]="Got here%s"%intermediary_id
         #return HttpResponse(json.JSONEncoder().encode(result), mimetype='application/json')
     elif command_id=="RST":
-        #result={}
-        #Retrieve score gardens
-        #myjson={"Day":"Today"}
-
-        #myjson =json.loads(request.body) 
         status=retrieveScoreGardens(myjson,intermediary_id)
         return HttpResponse(status, mimetype='application/json')
 
@@ -359,6 +354,10 @@ def dataloader(request,command_id):
         obj=ManageAvatars(myjson)
         status=obj.getAllAvatars()
         
+        return HttpResponse(status, mimetype='application/json')
+    
+    elif command_id=="GUA": #get updated aquarium
+        status=retrieveAquariumComments(myjson,intermediary_id)
         return HttpResponse(status, mimetype='application/json')
 
         
@@ -380,8 +379,8 @@ def uploadActivity(myjson):
     status=obj.uploadActivity()
     return status
 
-def saveComment(myjson,beneficiary_id):
-    obj=SaveComment(myjson,beneficiary_id)
+def saveComment(myjson,beneficiary_id,intermediary_id):
+    obj=SaveComment(myjson,beneficiary_id,intermediary_id)
     status=obj.saveCommentInDB()
     return status
 
@@ -411,8 +410,6 @@ def saveAvatar(myjson):
     return status
 
     
-
-
 
 
 @csrf_exempt
@@ -501,7 +498,7 @@ def dataupdate(request,command_id):
     elif command_id =="SC":
         
         myjson=json.loads(request.body)
-        status=saveComment(myjson,beneficiary_id)
+        status=saveComment(myjson,beneficiary_id,intermediary_id)
         return HttpResponse(status, content_type='application/json')
          
     

@@ -5,17 +5,16 @@ from sqlalchemy import create_engine,distinct,func,asc
 from sqlalchemy.orm import sessionmaker
 from wellness.applogic.points_module import Points,db
 from retrieve_sound import RetrieveSound
-from retrieve_intermediary import RetrieveIntermediary,Beneficiary
+from retrieve_intermediary import RetrieveIntermediary
 from collections import OrderedDict
 from save_factors import ManageFactors
 import os
-from wellness.applogic.activity_module import PhysicalActivity
+from wellness.applogic.activity_module import PhysicalActivity,db,dbconn
+
 from random import randint
 from wellness.applogic.pilot_start import PilotCommencement
 from wellness.applogic.food_beverage_module import FoodAndBeverage,Meal,MealComposition,db,dbconn
 from wellness.applogic.badges_module import Badges,AttainedUserBadges
-from save_comment import SaveComment
-
 
 #def bubblesort(A,X,Y,Z,U,V,W,L,M,B,C,Q,R):
 def bubblesort(A):  
@@ -23,7 +22,18 @@ def bubblesort(A):
     for k in range( len( A ) - 1, i, -1 ):
       if ( A[k].total_plants> A[k - 1].total_plants):
         swap( A, k, k - 1 )
-
+        #swap(X, k, k - 1 )
+        #swap(Y, k, k - 1 )
+        #swap(Z, k, k - 1 )
+        #swap(U, k, k - 1 )
+        #swap(V, k, k - 1 )
+        #swap(W, k, k - 1 )
+        #swap(L, k, k - 1 )
+        #swap(M, k, k - 1 )
+        #swap(B, k, k - 1 )
+        #swap(C, k, k - 1 )
+        #swap(Q, k, k - 1 )
+        #swap(R, k, k - 1 )
   return A
  
 def swap( A, x, y ):
@@ -34,8 +44,20 @@ def swap( A, x, y ):
 
 class TeamFeatures:
 
-  def __init__(self,team_name,team_members,url,trees,flowers,total_plants,usage_points,bonus_points,badge,badge_url,beneficiary_id,fishnum,fishsize,aquariumcomments,gardencomments):
-
+  self.team_name=""
+  self.team_members=""
+  self.url=""
+  self.trees=0
+  self.flowers=0
+  self.total_plants=0
+  self.usage_points=0
+  self.bonus_points=0
+  self.badge=""
+  self.badge_url=""
+  self.beneficiary_id=""
+  self.fishnum=0
+  self.fishsize=0
+  def __init__(team_name,team_members,url,trees,flowers,total_plants,usage_points,bonus_points,badge,badge_url,beneficiary_id,fishnum,fishsize):
     self.team_name=team_name
     self.team_members=team_members
     self.url=url
@@ -44,13 +66,11 @@ class TeamFeatures:
     self.total_plants=total_plants
     self.usage_points=usage_points
     self.bonus_points=bonus_points
-    self.badge=badge
+    sel.badge=badge
     self.badge_url=badge_url
     self.beneficiary_id=beneficiary_id
     self.fishnum=fishnum
     self.fishsize=fishsize
-    self.aquariumcomments=aquariumcomments
-    self.gardencomments=gardencomments
 
 
     
@@ -269,7 +289,7 @@ class RetrievePoints:
          try:
 
 
-              
+
               varmyjson={'Day':"Today"}
               myjson={'Fname':'Dummy','Lname':'Dummy','Username':self.intermediary_id}
               obj=RetrieveIntermediary(myjson)
@@ -280,7 +300,7 @@ class RetrievePoints:
               if b_id==None :
                   raise ValueError('This individual is not assigned a beneficiary')
 
-              '''
+        
               clickPointsObj=RetrievePoints(varmyjson,self.intermediary_id,1)
               resclickpoints=clickPointsObj.retrieveIntermediaryClickPoints()
               resclickpoints=json.loads(resclickpoints)
@@ -295,7 +315,7 @@ class RetrievePoints:
         
         
               stepspoints=int(ressteps["steps"]/ressteps["dates_counter"])
-              '''
+        
         
         
         
@@ -377,59 +397,6 @@ class RetrievePoints:
 
 
 
-    def getUpdatedAquariumComments(self):
-      result={}
-
-      try:
-        teamname=self.myjson["TeamName"]
-        #teamname="Cameroon"
-      except Exception as e:
-        result["P00"]={"Q0":-1,"Q1":"No Comment","Q2":e}
-        return (json.JSONEncoder().encode(OrderedDict(sorted(result.items(), key=lambda t: t[0]))))
-
-
-      try:
-
-        engine=db
-        #create a Session
-        Session = sessionmaker(bind=engine)
-        session = Session()
-
-        #get an intermediary id based on team name
-
-        res=session.query(Beneficiary).filter(Beneficiary.team_name==teamname).first()
-        
-        if res is None:
-          result["P00"]={"Q0":-1,"Q1":"No Comment","Q2":-1}
-          return (json.JSONEncoder().encode(OrderedDict(sorted(result.items(), key=lambda t: t[0]))))
-        else:
-          intermediary_id=res.intermediary_id
-          beneficiary_id=res.id
-
-        
-        myjson={}
-        obj=SaveComment(myjson,beneficiary_id,intermediary_id)# interme
-              
-        res=obj.getComments("Aquarium")
-
-        aquariumcomments=json.loads(res)
-        
-
-        return (json.JSONEncoder().encode(OrderedDict(sorted(aquariumcomments.items(), key=lambda t: t[0]))))
-
-
-
-
-      except Exception as e:
-
-        result["P00"]={"Q0":-1,"Q1":"No Comment","Q2":e}
-        return (json.JSONEncoder().encode(OrderedDict(sorted(result.items(), key=lambda t: t[0]))))
-
-
-
-
-
-
     def retrieveScoreGardensUrls(self):
         result={}
         try:
@@ -461,11 +428,11 @@ class RetrievePoints:
         res=obj.retrieveIntermediaryInDB()
         
         intermediaries_tuple=json.loads(res)
-        intermediaries_emails=""
-        intermediary_names=""
-        #orig_emails=[]
+        intermediaries_emails=[]
+        intermediary_names=[]
+        orig_emails=[]
         beneficiary_id=0
-        beneficiary_names=""
+        beneficiary_names=[]
         posn=0
         gardens=[]
         competitors_counter=0
@@ -499,15 +466,15 @@ class RetrievePoints:
              else:
                   
                  
-                  #orig_emails.append(user["D1"]) #keep original email addresses
+                  orig_emails.append(user["D1"]) #keep original email addresses
                   orig_email=user["D1"]
              
                   user["D1"]=user["D1"].replace("@","_at_")
                   user["D1"]=user["D1"].replace(".","_dot_")
                   
-                  intermediary_email=user["D1"]
-                  intermediary_names=user["D0"]
-                  beneficiary_names=user["D2"][0:user["D2"].index('.')]# get the name only
+                  intermediaries_emails.append(user["D1"])
+                  intermediary_names.append(user["D0"])
+                  beneficiary_names.append(user["D2"][0:user["D2"].index('.')])# get the name only
                   myjson={'Fname':'Dummy','Lname':'Dummy','Username':orig_email}
                   obj=RetrieveIntermediary(myjson)
                   result2=obj.isAssignedBeneficiary()
@@ -519,16 +486,16 @@ class RetrievePoints:
                   beneficiary_id=team_identifier  #Beneficiary 
 
                 
-                  file_path="django_facebook/images/garden/%s/%s_%s.jpeg"%(intermediary_email,beneficiary_tuple["Id"],garden_label)
+                  file_path="django_facebook/images/garden/%s/%s_%s.jpeg"%(intermediaries_emails[posn],beneficiary_tuple["Id"],garden_label)
                   
-                  file_name="%s_%s"%(beneficiary_id,garden_label)
+                  file_name="%s_%s"%(beneficiary_ids[posn],garden_label)
                   url=file_path # url
 
 
                   
                   team_name=beneficiary_tuple["TeamName"] # Team Name
                   
-                  one_team_members="(%s, %s)"%(intermediary_names,beneficiary_names) # put together team members
+                  one_team_members="(%s, %s)"%(intermediary_names[posn],beneficiary_names[posn]) # put together team members
             
 
 
@@ -562,8 +529,8 @@ class RetrievePoints:
                   bonus_points=stepspoints  #Bonus points
                   
                      
-                  
-                  resbadge=clickPointsObj.retrieveIndividualBadge()
+
+                  resbadge=self.retrieveIndividualBadge()
                   resbadge=json.loads(resbadge)
                   
                   #get badge name for this individual
@@ -571,11 +538,11 @@ class RetrievePoints:
 
                   #get a badge url for this person
                   badge_url=resbadge["R00"]["D1"] #Badge URL
-                  
+
 
                   trees=int(10*(11-resbadge["R00"]["D4"])) # the number of trees in a garden
                   fishnum=int(11-resbadge["R00"]["D4"]) # the number of fish in a tank
-                  fishsize=float(float(fishnum)/float(10)) # fish size is determined by how many fish are in the tank. The more fish the bigger the size. This weill also be used to detrmine the quality of a fish tank
+                  fishsize=float(float(fish)/float(10)) # fish size is determined by how many fish are in the tank. The more fish the bigger the size. This weill also be used to detrmine the quality of a fish tank
                   
 
 
@@ -590,28 +557,7 @@ class RetrievePoints:
                   total=trees+flowers
                   
                   total_plants=total
-
-
-                  obj=SaveComment(myjson,beneficiary_tuple["Id"],orig_email)
-              
-                  res=obj.getComments("Aquarium")
-
-                  aquariumcomments=json.loads(res)
-
-
-
-                  #newaquariumcomments=json.loads(newaquariumcomments)
-
-                    
-                
-
-              
-                  res=obj.getComments("Garden")
-
-                  gardencomments=json.loads(res)
-
-
-                  one_team_features=TeamFeatures(team_name,team_members,url,trees,flowers,total_plants,usage_points,bonus_points,badge,badge_url,beneficiary_tuple["Id"],fishnum,fishsize,aquariumcomments,gardencomments)
+                  one_team_features=TeamFeatures(team_name,team_members,url,trees,flowers,total_plants,usage_points,bonus_points,badge,badge_url,beneficiary_id,fishnum,fishsize)
                   team_features.append(one_team_features)
 
 
@@ -639,7 +585,7 @@ class RetrievePoints:
             second_posn=second_posn+1 
             
             urls_tuple[key2+"%s"%second_posn]=one_team.url #D2 url for garden
-            if one_team.total_plants==0:
+            if total_plants[posn]==0:
               urls_tuple[key2+"%s"%second_posn]=file_path_alt
               
             second_posn=second_posn+1
@@ -681,17 +627,6 @@ class RetrievePoints:
 
             urls_tuple[key2+"%s"%second_posn]="%s"%one_team.fishsize #D12 size of fish in the tank
             second_posn=second_posn+1
-
-
-
-
-            urls_tuple[key2+"%s"%second_posn]=OrderedDict(sorted(one_team.aquariumcomments.items(), key=lambda t: t[0])) #D13 Aquarium comments
-            second_posn=second_posn+1
-            
-
-            urls_tuple[key2+"%s"%second_posn]="%s"%one_team.gardencomments #D14 Garden comments
-            second_posn=second_posn+1
-
             
 
             
@@ -705,18 +640,15 @@ class RetrievePoints:
          
 
               
-  
-
-myjson={"TeamName":"Cameroon","Day":"Today"}   
-obj=RetrievePoints(myjson,'ntwakatule',1) 
-
-#obj=RetrievePoints(myjson,'ntwakatule',1)
+     
+myjson={'Day':'Today'}
+     
+obj=RetrievePoints(myjson,'pacomeambasa',2)
 result=obj.retrieveScoreGardensUrls()
 #result=obj.getCurrentRank()
 #result=obj.countRecordedMeals()
-
-#result=obj.getUpdatedAquariumComments()
 print result
+
 #print result
 
 #myjson={'Day':'Today'}

@@ -62,7 +62,7 @@ class ManageAvatars:
                return (json.JSONEncoder().encode(result))
           
           
-          
+             
           try:
                #now fetch url
                engine=db

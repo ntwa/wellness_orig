@@ -135,7 +135,8 @@ background:url('{{ STATIC_URL }}django_facebook/images/fishtankbg4.jpeg') no-rep
 } 
  
  
-/*end of the slider*/    
+/*end of the slider*/  
+
 
      
 </style>
@@ -154,8 +155,7 @@ background:url('{{ STATIC_URL }}django_facebook/images/fishtankbg4.jpeg') no-rep
 <script language="javascript" type="text/javascript" src="{% static "django_facebook/scripts/modernizr.custom.87504.js" %}"></script>
 
 
-
-  <script language="javascript" type="text/javascript" src="{% static "django_facebook/js/idangerous.swiper-2.1.min.js" %}"></script>
+<script language="javascript" type="text/javascript" src="{% static "django_facebook/js/idangerous.swiper-2.1.min.js" %}"></script>
 <script language="javascript" type="text/javascript">
 
 var static_url_val="static";
@@ -245,21 +245,35 @@ var static_url_val="static";
 function sendActivityMessage()
 {
 
-sendMessage($("#activitycommentbox").val(),previous_day_displayed_activity,'Activity');
+sendMessage($("#activitycommentbox").val(),'Activity',"None");
+
+}
+
+//aquarium_message_date={{todaysdate}}
+function sendAquariumMessage()
+{
+
+aquariumteamname=$("#aquariumteamname").val();
+
+sendMessage($("#aquariumcommentbox").val(),'Aquarium',aquariumteamname);
+$("#aquariumcommentbox").val('');
+getUpdatedAquariumComments();
+
+
+
 
 }
 
 function sendMealsMessage()
 {
-
-sendMessage($("#mealscommentbox").val(),previous_day_displayed_meal,'Meal');
+sendMessage($("#mealscommentbox").val(),'Meal',"None");
 
 }
 
 function sendWeightMessage()
 {
 
-sendMessage($("#weightcommentbox").val(),previous_day_displayed_weight,'Weight');
+sendMessage($("#weightcommentbox").val(),'Weight',"None");
 
 }
 
@@ -291,10 +305,10 @@ if(!initialized)
 
 			  {
 
-			      case "TeamProfile":$.mobile.changePage("#teamprofile",{ transition: "slide", changeHash: false });break;
-			      case "MainPage":$.mobile.changePage( "#pageone", { transition: "slide", changeHash: false });break;
+			         case "TeamProfile":$.mobile.changePage("#teamprofile",{ transition: "slide", changeHash: false });break;
+			         case "MainPage":$.mobile.changePage( "#pageone", { transition: "slide", changeHash: false });break;
                
-			      case "SaveProfileAndMainPage":checkModification();break;
+			         case "SaveProfileAndMainPage":checkModification();break;
 			      
                case "SaveProfile":saveProfile();break;
                case "FoodAndBeverages":$.mobile.changePage( "#foodinterface", { transition: "slide", changeHash: false });break;
@@ -329,9 +343,9 @@ if(!initialized)
 
 
 
-                case "ActivityGraphs":alert(item);$.mobile.changePage( "#activityinterface", { transition: "slide", changeHash: false });break;
+               case "ActivityGraphs":alert(item);$.mobile.changePage( "#activityinterface", { transition: "slide", changeHash: false });break;
 
-                case "WeighingScale":$.mobile.changePage( "#weightinterface", { transition: "slide", changeHash: false });break;
+               case "WeighingScale":$.mobile.changePage( "#weightinterface", { transition: "slide", changeHash: false });break;
 
                 case "Game":$.mobile.changePage( "#gameinterface", { transition: "slide", changeHash: false });break;						
 
@@ -1437,6 +1451,7 @@ $("#datepickergarden" ).datepicker();
 
 var original_wrapper_content="";
 $(document).on("pagecreate","#fishtank",function(){
+
 
 
 
@@ -3374,7 +3389,9 @@ function Login(){
 var _gaq = _gaq || [];
 
     $(document).ready(function(e) {
-     $(".main_interface_wrapper").tinyscrollbar();
+
+
+     
         (function() {
           var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
           ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + 
@@ -6645,6 +6662,57 @@ Your browser does not support the HTML5 canvas tag.</canvas>
 
 <div data-role="page"  id="fishtank">
 
+
+  <div data-role="panel" id="aquariulcommentspanel" data-display="overlay"> 
+     <table>
+          <thead></thead>
+              <tbody>
+                <tr>
+                     <td class='commentstable'>
+                       
+
+                     </td>
+                 </tr>
+                 <tr>
+                     <td>
+            
+                        <div id="aquariumcomments">
+
+
+
+                        </div>
+
+
+           
+
+                     </td>
+
+                </tr>
+                <tr>
+                    <td>
+                       <textarea name="aquariumcommentbox" id="aquariumcommentbox" rows="20" cols="22"></textarea>
+                      <input type=hidden id="aquariumteamname" value="">
+                      <img src="{% static "django_facebook/images/sendmessage.jpg" %}"  style="cursor:pointer" onclick="sendAquariumMessage();">
+
+                    </td>
+
+
+                </tr>
+                <tr>
+                   <td>
+                     <a href="#fishtank" data-rel="close" class="ui-btn ui-btn-inline ui-shadow ui-corner-all ui-btn-a ui-icon-delete ui-btn-icon-left">Close</a>
+                   </td>
+
+                </tr>
+              </tbody>  
+
+
+
+                </table>
+
+  
+  </div> 
+
   <div data-role="header" style="background:#3b5998" >
 
     <h3>Help & Earn Reputation</h3>
@@ -6660,7 +6728,8 @@ Your browser does not support the HTML5 canvas tag.</canvas>
          
          <div id="aquiriumfish">
          <!--<canvas id="box" width="200" height="200"></canvas>-->
-        
+
+         <img src="{% static 'django_facebook/images/fishtankbg2.jpg' %}" alt="Swimming fish" id="fishtankbg"  />
          <img src="{% static 'django_facebook/images/fish/shark1.png' %}" alt="Swimming fish" id="shark1"  />
          <img src="{% static 'django_facebook/images/fish/shark2.png' %}" alt="Swimming fish" id="shark2"  />
          <img src="{% static 'django_facebook/images/fish/shark3.png' %}" alt="Swimming fish" id="shark3"  />
@@ -6709,7 +6778,7 @@ Your browser does not support the HTML5 canvas tag.</canvas>
          <img src="{% static 'django_facebook/images/fish/6_9.min.png' %}"  alt="Swimming fish" id="6_9"  />
          <img src="{% static 'django_facebook/images/fish/6_10.min.png' %}"  alt="Swimming fish" id="6_10"  />
    
-   '
+   
          <img src="{% static 'django_facebook/images/fish/5_1.min.png' %}" width="94" height="30" alt="Swimming fish" id="5_1"  />
          <img src="{% static 'django_facebook/images/fish/5_2.min.png' %}" width="94" height="30" alt="Swimming fish" id="5_2"  />
          <img src="{% static 'django_facebook/images/fish/5_3.min.png' %}" width="94" height="30" alt="Swimming fish" id="5_3"  />
@@ -6849,7 +6918,7 @@ Your browser does not support the HTML5 canvas tag.</canvas>
 
                   <tr>
 
-                    <td>
+                    <td >
                         Select Date:
                     </td>
                     <td>
@@ -6869,7 +6938,7 @@ Your browser does not support the HTML5 canvas tag.</canvas>
 
      <td colspan="2">                    
 
-      <table id="scoretank" class="main_interface_wrapper" align="center"> 
+      <table id="scoretank" class="main_interface_wrapper" align="center" style='border:none;'> 
 
       
 
@@ -6885,49 +6954,200 @@ Your browser does not support the HTML5 canvas tag.</canvas>
                    
                 
                   <td width="100%">
-                         
+                      <table align="center">
+                         <tr>
+                              <td>
+                                <div id="teamscoreaquirium">
 
-                        <div id="teamscoreaquirium"></div>
-                        <div class="device">
-                             <a class="arrow-left" href="#" id="arrow-left2"></a>
-                             <a class="arrow-right" href="#" id="arrow-right2"></a>
-                               <div class="swiper-container" id="container2">
-                               <div class="swiper-wrapper">
+                                </div>
+
+                              </td>
+
+
+                         </tr>
+                         <tr>
                               
-                             
-                                              
-                   
-                         {% for key in users_counter.items %}
-                             <div class="swiper-slide">  
-                           <!--<a class="commentslink" href="#fbcomments">Comments and Likes</a>
-   -->                        <!--   <div class="fb-like" data-href="https://developers.facebook.com/docs/plugins/" data-layout="standard" data-action="like" data-show-faces="true" data-share="true"></div>-->
+                              <td style="width:200;height:40;">
+                                  
+                                  <canvas width="200" height="30" id="aquarium_quality"></canvas>  
+
+                              </td>
+                         </tr>
+
+                         <tr>
+                            <td >
+                              <canvas width="200" height="200" id="aquarium_canvas"></canvas> 
+                            </td>
+                         </tr>
+
+                         <tr>
+                            <td>
+                               <table style="width:100%;">
+                                    <tr>
+                                         <td style="align:left;width:100%;" class='nobordertable'>
+                                              <a href='javascript:enableNextAquarium(1)' class='ui-btn ui-corner-all ui-icon-arrow-l ui-btn-icon-notext'>Left Arrow Icon</a>
+                                            
+                                         </td>
+
+
+                                         <td class='nobordertable' style="align:right;width:100%;" class='nobordertable'>
+                                             <a href='javascript:enableNextAquarium(2);' class='ui-btn ui-corner-all ui-icon-arrow-r ui-btn-icon-notext'>Arrow-r Icon</a>
+
+                                         </td>
+
+                                    </tr>
+
+                               </table>
+
+                            </td>
+
+                         </tr>
+
+
+
+
+
+                      </table>
+
                           
-                                <canvas width="200" height="200" class="aquarium_canvas"></canvas>
-                             </div>
-                             
-                        {% endfor %}  
-                                           
-                            
-      </div>
-    </div>
-    <div class="pagination" id="pagination2"></div>
-  </div> 
-                  
+
                    
                    </td>
               
               </tr>
 
+
+              <!--Comment box-->
+
+
+
+              
+<!--it starts from here-->
+<tr>
+
+     <td>
+
+     
+
+     <div align="center">
+
+      <table class="AquariumMessagePopUp" widht="100%">
+
+        <tr>
+
+            <td class="nobordertable">
+              <a href="#aquariulcommentspanel"><img src="{% static "django_facebook/images/comments1.jpeg" %}"></a>
+
+              <!--<a href="#aquariumPopUp" class="ui-btn ui-btn-inline ui-corner-all ui-shadow">Leave a comments</a>-->
+              <!--<a href="#aquariumPopUp" data-rel="popup"><img src="{% static "django_facebook/images/smsicon.jpg" %}"></a>-->
+
+            
+
+            </td>
+
         
 
-<tr><td>
-        <div id="like">
-<iframe id="likebt" class="fblike" src="//www.facebook.com/plugins/like.php?href=http%3A%2F%2Fict4d01.cs.uct.ac.za%2Fwellness%2Ffacebook%2Fexample%2F&amp;width&amp;layout=standard&amp;action=like&amp;show_faces=false&amp;share=false&amp;height=80&amp;appId=138647729661605" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:80%; height:80px;" allowTransparency="true"></iframe>
-</div>
-</td></tr>
+        </tr>
 
-       <tr><td><div id="comment"><div  class="fb-comments" data-href="http://ict4d01.cs.uct.ac.za/facebook/example/" data-numposts="5" data-colorscheme="light"></div></div></td></tr>        
 
+
+    
+
+       </table>
+
+     </div>
+
+
+
+    <div data-role="popup" data-history="false" id="aquariumPopUp" class="ui-content">
+
+      <a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn ui-icon-delete ui-btn-icon-notext ui-btn-right">Close</a>
+
+    
+
+       <table>
+
+    
+
+            <tr>
+
+            <td> 
+
+              <b><i>Leave a comment for team </i></b>: {{teamname}}<br>
+
+             </br>
+
+             <textarea name="aquariumcommentbox" id="aquariumcommentbox" rows="20" cols="22"></textarea>
+             <input type=hidden id="aquariumteamname" value="">
+             <img src="{% static "django_facebook/images/sendmessage.jpg" %}"  style="cursor:pointer" onclick="sendAquariumMessage();">
+
+             </td>
+
+
+            
+
+          </tr>
+
+         
+
+          
+
+      </table>
+
+    
+
+  </div>  
+
+  </td>
+
+  </tr>
+
+<!--end here-->
+
+
+
+
+
+
+              <!--comment box ending-->
+
+
+        
+        <!--     
+         <tr>
+
+            <td>
+                <table>
+
+                <tr>
+                     <td class='commentstable'>
+                       Comments:
+
+                     </td>
+                 </tr>
+                 <tr>
+                     <td>
+            
+                        <div id="aquariumcomments" style='height:100px;overflow:auto;'>
+
+
+
+                        </div>
+
+
+           
+
+                     </td>
+
+                </tr>
+
+
+
+                </table>
+
+            </td>
+
+         </tr>-->
 
         </tbody>
 
