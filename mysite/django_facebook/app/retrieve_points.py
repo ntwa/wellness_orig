@@ -689,7 +689,7 @@ class RetrievePoints:
             second_posn=second_posn+1
             
 
-            urls_tuple[key2+"%s"%second_posn]="%s"%one_team.gardencomments #D14 Garden comments
+            urls_tuple[key2+"%s"%second_posn]=OrderedDict(sorted(one_team.gardencomments.items(), key=lambda t: t[0])) #D14 Garden comments
             second_posn=second_posn+1
 
             
@@ -707,16 +707,16 @@ class RetrievePoints:
               
   
 
-myjson={"TeamName":"Cameroon","Day":"Today"}   
-obj=RetrievePoints(myjson,'ntwakatule',1) 
+#myjson={"TeamName":"Cameroon","Day":"Today"}   
+#obj=RetrievePoints(myjson,'ntwakatule',1) 
 
 #obj=RetrievePoints(myjson,'ntwakatule',1)
-result=obj.retrieveScoreGardensUrls()
+#result=obj.retrieveScoreGardensUrls()
 #result=obj.getCurrentRank()
 #result=obj.countRecordedMeals()
 
 #result=obj.getUpdatedAquariumComments()
-print result
+#print result
 #print result
 
 #myjson={'Day':'Today'}

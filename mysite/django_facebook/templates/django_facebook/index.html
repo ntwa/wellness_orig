@@ -30,62 +30,47 @@
         margin-left:10px
      }
 
-
-
-
- /* for the slider*/
- 
- 
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+}
 .device {
- /* width: 640px;
-  height: 300px;*/
   width: 200px;
   height: 200px;
-  
-  /*width: 180px;
-  height: 180px;*/
-i  /*padding: 30px 40px;*/
-  padding: 25px 25px;
+  padding: 30px 40px;
   border-radius: 20px;
-  /*background:url('{{ STATIC_URL }}django_facebook/images/slider1-1.jpg') no-repeat center center;*/
-  background:#ff8604;
-   /*background:url('{{ STATIC_URL }}django_facebook/images/fishtankbg3.jpg') repeat center center;*/
+  /*background: #111;*/
+
+  background: #8b9dc3;
   border: 3px solid white;
   margin: 5px auto;
   position: relative;
   box-shadow: 0px 0px 5px #000;
 }
-
 .device .arrow-left {
-  background: url('{{ STATIC_URL }}django_facebook/images/arrows.png') no-repeat left top;
+  background: url('{% static "django_facebook/images/arrows.png" %}') no-repeat left top;
   position: absolute;
-  left: 5px;
+  left: 10px;
   top: 50%;
   margin-top: -15px;
   width: 17px;
   height: 30px;
-  }
-
+}
 .device .arrow-right {
-  background: url('{{ STATIC_URL }}django_facebook/images/arrows.png') no-repeat left bottom;
+  background: url('{% static "django_facebook/images/arrows.png" %}') no-repeat left bottom;
   position: absolute;
-  right: 5px;
+  right: 10px;
   top: 50%;
   margin-top: -15px;
   width: 17px;
   height: 30px;
 }
 .swiper-container {
-  /*height: 300px;
-  width: 640px;*/
   height: 200px;
   width: 200px;
-/* background: white;*/
- background:url('{{ STATIC_URL }}django_facebook/images/garden/garden3.jpeg') no-repeat center center;*/
-  /*background: url('{{ STATIC_URL }}django_facebook/images/fishtankbg3.jpg') repeat;*/
-  
 }
-
 .content-slide {
   padding: 20px;
   color: #fff;
@@ -96,7 +81,7 @@ i  /*padding: 30px 40px;*/
 }
 .pagination {
   position: absolute;
-  left: 0;co
+  left: 0;
   text-align: center;
   bottom:5px;
   width: 100%;
@@ -107,6 +92,7 @@ i  /*padding: 30px 40px;*/
   height: 10px;
   border-radius: 10px;
   background: #999;
+  /*background:blue;*/
   box-shadow: 0px 1px 2px #555 inset;
   margin: 0 3px;
   cursor: pointer;
@@ -162,84 +148,77 @@ var static_url_val="static";
 </script>
 
 <script>
-  
-  var click_set_1=false;
-  var click_set_1=false;
-  function swipe(posn){
-  //var posn=2;
-  var container_id="container";
-  var pagination_id="pagination";
-  container_id=container_id+posn;
-  pagination_id=pagination_id+posn;
-  var arrow_left_id="arrow-left";
-  var arrow_right_id="arrow-right";
-  arrow_left_id=arrow_left_id+posn;
-  arrow_right_id=arrow_right_id+posn;
-  
-  
-  var swiper_container=".swiper-container[id=\'";
-  swiper_container=swiper_container+container_id;
-  swiper_container=swiper_container+"\']";
-  
-  var pagination_div=".pagination[id=\'";
-  pagination_div=pagination_div+pagination_id;
-  pagination_div=pagination_div+"\']";
-  
-  var arrow_left=".arrow-left[id=\'"
-  arrow_left=arrow_left+arrow_left_id;
-  arrow_left=arrow_left+"\']";
-  
-  var arrow_right=".arrow-right[id=\'"
-  arrow_right=arrow_right+arrow_right_id;
-  arrow_right=arrow_right+"\']";
+//var bind_status=false;
+var global_image_displayed="";
+function swipe(){
 
-  var mySwiper = new Swiper(swiper_container,{
-    pagination: pagination_div,
+   $('.arrow-left').unbind();
+   $('.arrow-right').unbind();
+
+
+    var mySwiper = new Swiper('.swiper-container',{
+    pagination: '.pagination',
     loop:true,
     grabCursor: true,
     paginationClickable: true
-   });
-  
-  $(arrow_left).unbind();
-  $(arrow_right).unbind(); 
-   
-  
-  $(arrow_left).on('click', function(e){
- 
-      
-            
+  });
+
+
+  $('.arrow-left').on('click', function(e){
     e.preventDefault();
-      mySwiper.swipePrev();
-      if(posn==2)
-      {
-      
-      playAquarium("left");
-      }
-      else
-      {
-       appendTeamToGarden("left");
-      }
+    mySwiper.swipePrev();
+    appendTeamToGarden("left");
   });
-  
 
-  $(arrow_right).on('click', function(e){
-  
-    e.preventDefault()
+  $('.arrow-right').on('click', function(e){
+    e.preventDefault();
     mySwiper.swipeNext();
-       if(posn==2)
-      {
-      playAquarium("right");
-      
-      }
-      else
-      {
-      appendTeamToGarden("right");
-      }
+    appendTeamToGarden("right");
   });
-  
-  }
-  
 
+
+$(".swiper-slide").on("swipeleft",function(e){
+    e.preventDefault();
+    mySwiper.swipeNext();
+    
+    current_image_displayed=$(".swiper-slide-active").find( "img" ).attr("src");
+    if(current_image_displayed!=global_image_displayed)
+    {
+
+     appendTeamToGarden("right");
+     global_image_displayed=$(".swiper-slide-active").find( "img" ).attr("src");
+
+    }
+
+});
+
+
+  $(".swiper-slide").on("swiperight",function(e){
+      e.preventDefault();
+      mySwiper.swipePrev();
+
+    current_image_displayed=$(".swiper-slide-active").find( "img" ).attr("src");
+    //alert(current_image_displayed);
+    //alert(global_image_displayed)
+
+
+    if(current_image_displayed!=global_image_displayed)
+    {
+      appendTeamToGarden("left");
+      global_image_displayed=$(".swiper-slide-active").find( "img" ).attr("src");
+
+    }
+
+});
+
+  global_image_displayed=$(".swiper-slide-active").find( "img" ).attr("src");
+   
+
+
+
+
+
+}
 
 
 function sendActivityMessage()
@@ -371,40 +350,7 @@ if(!initialized)
 
 
 }
-/*
-$(document).on("pageshow","#teamprofile",function(){
- 
 
-
-});*/
-/*
-var save_flag=0;
-var repeating_modification=0;
-var changeSaveFlag=function()
-{
-  //alert("Repeated Flag="+save_flag+" , repeted_Modified="+repeating_modification);
-  
- if(save_flag==1){
-        save_flag=0;
-        
-
- }
- else
-    {
-    if(!repeating_modification)
-     {
-        var quit_profile_inner_element="<a href='#confirmProfileSavePopUp' data-rel='popup' data-position-to='window' data-transition='fade' class='ui-btn ui-corner-all ui-shadow ui-btn-inline'>Main Page</a>";
-        $("#quitprofile").html('');
-        $("#quitprofile").append(quit_profile_inner_element);
-        repeating_modification=1;
-     
-     }
-    
-    }
- 
-
-}
-*/
 
 function changeAvatar(){
 
@@ -1505,8 +1451,8 @@ $("#datepickerscoretank" ).datepicker();
 
 $(document).on("pageshow","#fishtank",function(){
 displayScoreTanks("Today");
-$(".swiper-container[id='container2']").removeClass('aquariumbg1').addClass('aquariumbg2');
-swipe(2);
+//$(".swiper-container[id='container2']").removeClass('aquariumbg1').addClass('aquariumbg2');
+//swipe(2);
 trackPage($.mobile.activePage.attr("data-url"));
 
 
@@ -6387,7 +6333,7 @@ Your browser does not support the HTML5 canvas tag.</canvas>
 
 <div data-role="page"  id="scoreboardinterface">
 
-  <div data-role="header" style="background:#3b5998" >
+  <div data-role="header" style="background:#3b5998">
 
     <h1>Help & Earn Points</h1>
 
@@ -6397,9 +6343,11 @@ Your browser does not support the HTML5 canvas tag.</canvas>
 
   <div data-role="main" class="ui-content" >
 
-         <h3> Reputation Ranking in Helping Your Family Member</h3> 
+        <h3 id='leaderboardheader'>
+          
+        </h3> 
 
-  <table class="main_interface_wrapper" align="center">
+    <table class="main_interface_wrapper" align="center">
 
                   <tr>
 
@@ -6407,8 +6355,8 @@ Your browser does not support the HTML5 canvas tag.</canvas>
                         Select Date:
                     </td>
                     <td>
-                         <input type="text" id="datepickerscoreboard" readonly="true">
-                           <input type="hidden" id="date_selected_scoreboard" value="None">
+                         <input type="text" id="datepickerscoreboard" readonly="true" value="Click Here!!">
+                         <input type="hidden" id="date_selected_scoreboard" value="None">
                     </td>
 
 
@@ -6457,9 +6405,9 @@ Your browser does not support the HTML5 canvas tag.</canvas>
 
   <a  class="ui-btn ui-icon-back ui-btn-icon-left menuimage" data-transition="slide" data-direction="reverse" alt="Game">Previous Page</a>   
 
- <a class="ui-btn ui-icon-back ui-btn-icon-left menuimage" data-transition="slide" data-direction="reverse" alt="MainPage">Main Page</a>  
+  <a class="ui-btn ui-icon-back ui-btn-icon-left menuimage" data-transition="slide" data-direction="reverse" alt="MainPage">Main Page</a>  
 
-  <div data-role="footer" style="background:#3b5998" >
+  <div data-role="footer" style="background:#3b5998">
 
     <h1>Track Close One's Wellness</h1>
 
@@ -6469,6 +6417,59 @@ Your browser does not support the HTML5 canvas tag.</canvas>
 
 
 <div data-role="page"  id="scoregardensinterface">
+    <div data-role="panel" id="gardencommentspanel" data-display="overlay"> 
+     <table>
+          <thead></thead>
+              <tbody>
+                <tr>
+                     <td >
+                       
+
+                     </td>
+                 </tr>
+                 <tr>
+                     <td>
+            
+                        <div id="gardencomments">
+
+
+
+                        </div>
+
+
+           
+
+                     </td>
+
+                </tr>
+                <tr>
+                    <td>
+                       <textarea name="gardencommentbox" id="gardencommentbox" rows="20" cols="22"></textarea>
+                      <input type=hidden id="aquariumteamname" value="">
+                      <img src="{% static "django_facebook/images/sendmessage.jpg" %}"  style="cursor:pointer" onclick="sendAquariumMessage();">
+
+                    </td>
+
+
+                </tr>
+                <tr>
+                   <td>
+                     <a href="#scoregardensinterface" data-rel="close" class="ui-btn ui-btn-inline ui-shadow ui-corner-all ui-btn-a ui-icon-delete ui-btn-icon-left">Close</a>
+                   </td>
+
+                </tr>
+              </tbody>  
+
+
+
+                </table>
+
+  
+  </div> 
+
+
+
+
 
   <div data-role="header" style="background:#3b5998" >
 
@@ -6518,6 +6519,9 @@ Your browser does not support the HTML5 canvas tag.</canvas>
               <tr>
               
                   <td>
+
+
+                  
                   <div id="teamscoregarden"></div>
                
    <div class="device">
@@ -6531,43 +6535,47 @@ Your browser does not support the HTML5 canvas tag.</canvas>
     </div>
     <div class="pagination" id="pagination1"></div>
   </div>
-<!--
-  <script language="javascript" type="text/javascript" src="{% static "django_facebook/js/idangerous.swiper-2.1.min.js" %}"></script>
- 
-  <script>
-  
-  function swipe(){
-  var mySwiper = new Swiper('.swiper-container',{
-    pagination: '.pagination',
-    loop:true,
-    grabCursor: true,
-    paginationClickable: true
-  })
-  $('.arrow-left').on('click', function(e){
-    e.preventDefault()
-    mySwiper.swipePrev()
-  })
-  $('.arrow-right').on('click', function(e){
-    e.preventDefault()
-    mySwiper.swipeNext()
-  })
-  }
-  </script>
-   -->                
+           
                    
-                   </td>
+            </td>
               
               </tr>
+
+
 
         
 
 
             <tr><td>
-        <div id="gardenfblike">
-          <iframe id="gardenfblikebt" class="fblike" src="//www.facebook.com/plugins/like.php?href=http%3A%2F%2Fict4d01.cs.uct.ac.za%2Fwellness%2Ffacebook%2Fexample%2F&amp;width&amp;layout=standard&amp;action=like&amp;show_faces=false&amp;share=false&amp;height=80&amp;appId=138647729661605" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:80%; height:80px;" allowTransparency="true"></iframe>
-</div>
-</td></tr>
-  <tr><td><div id='gardencomment'><div  class="fb-comments" data-href="http://ict4d01.cs.uct.ac.za/facebook/example/" data-numposts="5" data-colorscheme="light"></div></div></td></tr>
+
+                      <div align="center">
+
+                           <table class="AquariumMessagePopUp" widht="100%">
+
+                              <tr>
+
+                                <td class="nobordertable">
+                                  <a href="#gardencommentspanel"><img src="{% static "django_facebook/images/comments1.jpeg" %}"></a>
+
+            
+
+                                </td>
+
+        
+
+                             </tr>
+
+
+
+    
+
+                         </table>
+
+                      </div>
+
+
+            </td></tr>
+ 
 
 
 
@@ -6663,7 +6671,7 @@ Your browser does not support the HTML5 canvas tag.</canvas>
 <div data-role="page"  id="fishtank">
 
 
-  <div data-role="panel" id="aquariulcommentspanel" data-display="overlay"> 
+  <div data-role="panel" id="aquariumcommentspanel" data-display="overlay"> 
      <table>
           <thead></thead>
               <tbody>
@@ -7031,12 +7039,12 @@ Your browser does not support the HTML5 canvas tag.</canvas>
 
      <div align="center">
 
-      <table class="AquariumMessagePopUp" widht="100%">
+      <table class="AquariumMessagePopUp">
 
         <tr>
 
             <td class="nobordertable">
-              <a href="#aquariulcommentspanel"><img src="{% static "django_facebook/images/comments1.jpeg" %}"></a>
+              <a href="#aquariumcommentspanel"><img src="{% static "django_facebook/images/comments1.jpeg" %}"></a>
 
               <!--<a href="#aquariumPopUp" class="ui-btn ui-btn-inline ui-corner-all ui-shadow">Leave a comments</a>-->
               <!--<a href="#aquariumPopUp" data-rel="popup"><img src="{% static "django_facebook/images/smsicon.jpg" %}"></a>-->
@@ -7058,7 +7066,7 @@ Your browser does not support the HTML5 canvas tag.</canvas>
      </div>
 
 
-
+<!--
     <div data-role="popup" data-history="false" id="aquariumPopUp" class="ui-content">
 
       <a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn ui-icon-delete ui-btn-icon-notext ui-btn-right">Close</a>
@@ -7097,6 +7105,7 @@ Your browser does not support the HTML5 canvas tag.</canvas>
     
 
   </div>  
+  -->
 
   </td>
 

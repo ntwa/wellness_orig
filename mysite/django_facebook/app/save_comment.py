@@ -39,6 +39,11 @@ class SaveComment:
 
         key2="Q"
         first_posn=0
+
+        if res == []:
+          result["P00"]={"Q0":-1,"Q1":"No comments!"}
+          return (json.JSONEncoder().encode(OrderedDict(sorted(result.items(), key=lambda t: t[0]))))
+
         if res is None:
           result["P00"]={"Q0":-1,"Q1":"No comments!"}
           return (json.JSONEncoder().encode(OrderedDict(sorted(result.items(), key=lambda t: t[0]))))
