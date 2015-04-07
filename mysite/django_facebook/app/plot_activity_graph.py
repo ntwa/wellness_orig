@@ -384,7 +384,7 @@ class PlotActivityGraph:
           Session = sessionmaker(bind=engine)
           session = Session()
 
-
+          print startdate,enddate
 
           try:
                
@@ -655,7 +655,7 @@ class PlotActivityGraph:
 #res=obj.getDataPoints()
 #print res
 
-#obj=PlotActivityGraph({"StartDate":"2014-09-01","EndDate":"2014-09-30","TimeInterval":"Monthly"},8)
+#obj=PlotActivityGraph({"StartDate":"2015-03-01","EndDate":"2015-03-31","TimeInterval":"Monthly"},1)
 #res=obj.getDataPoints()
 #print res
 

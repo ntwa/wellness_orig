@@ -23,6 +23,11 @@ def bubblesort(A):
     for k in range( len( A ) - 1, i, -1 ):
       if ( A[k].total_plants> A[k - 1].total_plants):
         swap( A, k, k - 1 )
+      elif ((A[k].total_plants== A[k - 1].total_plants) and (A[k].total_points>A[k - 1].total_points)):
+        swap( A, k, k - 1 )
+
+
+
 
   return A
  
@@ -34,7 +39,7 @@ def swap( A, x, y ):
 
 class TeamFeatures:
 
-  def __init__(self,team_name,team_members,url,trees,flowers,total_plants,usage_points,bonus_points,badge,badge_url,beneficiary_id,fishnum,fishsize,aquariumcomments,gardencomments):
+  def __init__(self,team_name,team_members,url,trees,flowers,total_plants,usage_points,bonus_points,badge,badge_url,beneficiary_id,fishnum,fishsize,aquariumcomments,gardencomments,total_points):
 
     self.team_name=team_name
     self.team_members=team_members
@@ -51,6 +56,7 @@ class TeamFeatures:
     self.fishsize=fishsize
     self.aquariumcomments=aquariumcomments
     self.gardencomments=gardencomments
+    self.total_points=total_points
 
 
     
@@ -157,7 +163,31 @@ class RetrievePoints:
         Session = sessionmaker(bind=engine)
         session = Session()
 
+        '''
+        if self.last_date_specified==1:
+            day=self.myjson["Day"]
+            if day != "Today":
+
+              day=datetime.date.today()
+                #res2=session.query(AttainedUserBadges,Badges).filter(AttainedUserBadges.intermediary_id==self.intermediary_id).filter(AttainedUserBadges.status!=1).filter(AttainedUserBadges.badge_id==Badges.rank).filter(AttainedUserBadges.dateattained<=day).filter(func.max(AttainedUserBadges.badge_id)==Badges.rank).first()
+              res2=session.query(func.min(AttainedUserBadges.badge_id).label("max_badge")).filter(AttainedUserBadges.intermediary_id==self.intermediary_id).filter(AttainedUserBadges.dateattained<=day).first()
+              if res2 is None:
+                result["Rank"]=11
+                result["Message"]="Badge position retrieved successfully"
+                return (json.JSONEncoder().encode(result))
+              else:
+                max_badge=res2.max_badge
+                result["Rank"]=max_badge
+                result["Message"]="Badge position retrieved successfully"
+                return (json.JSONEncoder().encode(result))
+                #res2=session.query(AttainedUserBadges,Badges).filter(AttainedUserBadges.intermediary_id==self.intermediary_id).filter(AttainedUserBadges.status!=1).filter(AttainedUserBadges.badge_id==Badges.rank).filter(AttainedUserBadges.dateattained<=day).filter(func.max(AttainedUserBadges.badge_id)==Badges.rank).first()
+            #else:
+            #  res2=session.query(AttainedUserBadges,Badges).filter(AttainedUserBadges.intermediary_id==self.intermediary_id).filter(AttainedUserBadges.status==1).filter(AttainedUserBadges.badge_id==Badges.rank).first()
+        
+        #else:
+        '''
         res2=session.query(AttainedUserBadges,Badges).filter(AttainedUserBadges.intermediary_id==self.intermediary_id).filter(AttainedUserBadges.status==1).filter(AttainedUserBadges.badge_id==Badges.rank).first()
+        
         if res2 is None:
           rank=11# means there is no badge
         else:
@@ -171,7 +201,7 @@ class RetrievePoints:
         print "Exception thrown: %s"%e
         result["Rank"]=-1
         result["Message"]=e
-
+      print "Rank=",rank
       return (json.JSONEncoder().encode(result))
 
     def countRecordedMeals(self,beneficiary_id):
@@ -218,9 +248,25 @@ class RetrievePoints:
                                 
 
 
-            res=session.query(func.count(distinct(Points.datecaptured)).label("sum_points")).filter(Points.intermediary_id==self.intermediary_id).first()
+            #res=session.query(func.count(distinct(Points.datecaptured)).label("sum_points")).filter(Points.intermediary_id==self.intermediary_id).first()
 
+            if self.last_date_specified==1:
+                day=self.myjson["Day"]
+                if day=="Today":
+                   day=datetime.date.today()
+                
+                #res=session.query(func.count((Points.datecaptured)).label("sum_points")).filter(Points.intermediary_id==self.intermediary_id).filter(Points.datecaptured<=day).first() 
+                res=session.query(func.count((Points.datecaptured)).label("sum_points")).filter(Points.intermediary_id==self.intermediary_id).filter(Points.datecaptured<=day).first()   
+                 #res= session.query(func.sum(Points.scoredpoints).label("sum_points")).filter(Points.intermediary_id==self.intermediary_id).filter(Points.datecaptured<=day).first()
+            #get points by number of days an application has been used.
+            #res=session.query(func.count(distinct(Points.datecaptured)).label("sum_points")).filter(Points.intermediary_id==self.intermediary_id).filter(Points.datecaptured<=day).first()
+            else:
+                #res= session.query(func.sum(Points.scoredpoints).label("sum_points")).filter(Points.intermediary_id==self.intermediary_id).first()
+                res=session.query(func.count((Points.datecaptured)).label("sum_points")).filter(Points.intermediary_id==self.intermediary_id).first()
 
+            
+
+            
             
             retrieved_points_sum=0# initialize how many distinct dates are in the database
                       
@@ -260,13 +306,95 @@ class RetrievePoints:
             #sys.exit()   
 
 
+
+    def assignUrl(self,rank):
+      
+      if rank==1:
+
+        badges_urls="http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/queen.jpeg"
+      elif rank==2:
+        badges_urls="http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/princess.jpeg"
+  
+      elif rank==3:
+         
+        badges_urls="http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/duchess.jpeg"
+             
+      elif rank==4:
+        badges_urls="http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/grandmaster.jpeg"
+                
+      elif rank==5:
+        badges_urls="http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/seniormaster.jpeg"
+
+      elif rank==6:            
+        badges_urls="http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/master.jpeg"
+
+      elif rank==7:
+        badges_urls="http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/juniormaster.jpeg"
+  
+      elif rank==8:
+        badges_urls="http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/seniorservant.jpeg"
+
+      elif rank==9:
+        badges_urls="http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/servant.jpeg"
+
+      elif rank==10:
+        badges_urls="http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/slave.jpeg"
+
+      else:
+        badges_urls="http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/default.jpeg"
+      return badges_urls
               
     def retrieveIndividualBadge(self):
-
+         
 
          result={}
 
          try:
+
+              num=randint(2,49)
+              obj=RetrieveSound(num)
+              res=obj.retrieveSoundUrl()
+              res=json.loads(res)
+                
+              sound_url=res["url"]  
+
+
+              engine=db
+
+              #create a Session
+              Session = sessionmaker(bind=engine)
+              session = Session()
+
+
+              day="Not specified"
+              if self.last_date_specified==1:
+
+                day=self.myjson["Day"]
+
+                if day != "Today":
+        
+                  #res2=session.query(AttainedUserBadges,Badges).filter(AttainedUserBadges.intermediary_id==self.intermediary_id).filter(AttainedUserBadges.status!=1).filter(AttainedUserBadges.badge_id==Badges.rank).filter(AttainedUserBadges.dateattained<=day).filter(func.max(AttainedUserBadges.badge_id)==Badges.rank).first()
+                  res2=session.query(func.min(AttainedUserBadges.badge_id).label("max_badge")).filter(AttainedUserBadges.intermediary_id==self.intermediary_id).filter(AttainedUserBadges.date_attained<=day).first()
+                  #print res2.max_badge,self.intermediary_id
+                  if res2.max_badge is None:
+                    #result["Rank"]=11
+                    rank=11
+                    badge="No badge"
+                    badges_urls="http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/default.jpeg"
+                    result["R00"]={"D0":"Badge Acquired","D1":badges_urls,"D2":sound_url,"D3":badge,"D4":rank}
+                    
+                    return (json.JSONEncoder().encode(result))
+                
+                  else:
+                    max_badge=res2.max_badge
+                    badges_urls=self.assignUrl(max_badge)
+                    res2=session.query(Badges).filter(Badges.rank==max_badge).first()
+                    badge=res2.badgename
+
+                    result["R00"]={"D0":"Badge Acquired","D1":badges_urls,"D2":sound_url,"D3":badge,"D4":max_badge}
+                    result["Message"]="Badge position retrieved successfully"
+                    print  result["R00"]
+                    return (json.JSONEncoder().encode(result))
 
 
               
@@ -279,35 +407,13 @@ class RetrievePoints:
               b_id=beneficiary_tuple["Id"]
               if b_id==None :
                   raise ValueError('This individual is not assigned a beneficiary')
-
-              '''
-              clickPointsObj=RetrievePoints(varmyjson,self.intermediary_id,1)
-              resclickpoints=clickPointsObj.retrieveIntermediaryClickPoints()
-              resclickpoints=json.loads(resclickpoints)
-        
-              clickpoints=int(resclickpoints["points"])
-        
-              
-        
-        
-              ressteps=clickPointsObj.getSteps(b_id)
-              ressteps=json.loads(ressteps)
-        
-        
-              stepspoints=int(ressteps["steps"]/ressteps["dates_counter"])
-              '''
-        
-        
+      
         
               
         
               badges_urls=[]
 
-              engine=db
 
-              #create a Session
-              Session = sessionmaker(bind=engine)
-              session = Session()
 
               res2=session.query(AttainedUserBadges,Badges).filter(AttainedUserBadges.intermediary_id==self.intermediary_id).filter(AttainedUserBadges.status==1).filter(AttainedUserBadges.badge_id==Badges.rank).first()
               
@@ -322,46 +428,11 @@ class RetrievePoints:
 
         
         
-              if rank==1:
-                badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/queen.jpeg")
-              elif rank==2:
-                badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/princess.jpeg")
-  
-              elif rank==3:
-         
-                badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/duchess.jpeg")
-             
-              elif rank==4:
-                badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/grandmaster.jpeg")
-                
-              elif rank==5:
-                badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/seniormaster.jpeg")
-
-              elif rank==6:            
-                badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/master.jpeg")
-
-              elif rank==7:
-                badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/juniormaster.jpeg")
-  
-              elif rank==8:
-                badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/seniorservant.jpeg")
-
-              elif rank==9:
-                badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/servant.jpeg")
-              elif rank==10:
-                badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/slave.jpeg")
-              else:
-                badges_urls.append("http://ict4d01.cs.uct.ac.za/static/django_facebook/images/badges/default.jpeg")
+              badges_urls=self.assignUrl(rank)
 
                        
-
-              num=randint(2,49)
-              obj=RetrieveSound(num)
-              res=obj.retrieveSoundUrl()
-              res=json.loads(res)
-                
-              sound_url=res["url"]              
-              result={"R00":{"D0":"Badge Acquired","D1":badges_urls[0],"D2":sound_url,"D3":badge,"D4":rank}}
+           
+              result={"R00":{"D0":"Badge Acquired","D1":badges_urls,"D2":sound_url,"D3":badge,"D4":rank}}
 
               
               
@@ -539,7 +610,7 @@ class RetrievePoints:
                   varmyjson={'Day':day}
 		  
                                    
-                  clickPointsObj=RetrievePoints(varmyjson,orig_email,1)
+                  clickPointsObj=RetrievePoints(varmyjson,orig_email,self.last_date_specified)
                   resclickpoints=clickPointsObj.retrieveIntermediaryClickPoints()
                   resclickpoints=json.loads(resclickpoints)
                   
@@ -560,6 +631,8 @@ class RetrievePoints:
                   
                   
                   bonus_points=stepspoints  #Bonus points
+
+                  total_points=usage_points+bonus_points
                   
                      
                   
@@ -571,7 +644,8 @@ class RetrievePoints:
 
                   #get a badge url for this person
                   badge_url=resbadge["R00"]["D1"] #Badge URL
-                  
+
+                                    
 
                   trees=int(10*(11-resbadge["R00"]["D4"])) # the number of trees in a garden
                   fishnum=int(11-resbadge["R00"]["D4"]) # the number of fish in a tank
@@ -587,9 +661,10 @@ class RetrievePoints:
                   
                   #print file_name,trees, flowers
              
-                  total=trees+flowers
+                  #total=trees+flowers
                   
-                  total_plants=total
+                  total_plants=fishnum*10 # these are the total points
+
 
 
                   obj=SaveComment(myjson,beneficiary_tuple["Id"],orig_email)
@@ -611,7 +686,7 @@ class RetrievePoints:
                   gardencomments=json.loads(res)
 
 
-                  one_team_features=TeamFeatures(team_name,team_members,url,trees,flowers,total_plants,usage_points,bonus_points,badge,badge_url,beneficiary_tuple["Id"],fishnum,fishsize,aquariumcomments,gardencomments)
+                  one_team_features=TeamFeatures(team_name,team_members,url,trees,flowers,total_plants,usage_points,bonus_points,badge,badge_url,beneficiary_tuple["Id"],fishnum,fishsize,aquariumcomments,gardencomments,total_points)
                   team_features.append(one_team_features)
 
 
@@ -692,6 +767,11 @@ class RetrievePoints:
             urls_tuple[key2+"%s"%second_posn]=OrderedDict(sorted(one_team.gardencomments.items(), key=lambda t: t[0])) #D14 Garden comments
             second_posn=second_posn+1
 
+
+            urls_tuple[key2+"%s"%second_posn]="%s"%one_team.total_points #D15 Total points
+            second_posn=second_posn+1
+
+
             
 
             
@@ -707,7 +787,7 @@ class RetrievePoints:
               
   
 
-#myjson={"TeamName":"Cameroon","Day":"Today"}   
+#myjson={"TeamName":"Cameroon","Day":"2015-01-01"}   
 #obj=RetrievePoints(myjson,'ntwakatule',1) 
 
 #obj=RetrievePoints(myjson,'ntwakatule',1)

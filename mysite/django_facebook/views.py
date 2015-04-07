@@ -174,6 +174,23 @@ def dataloader(request,command_id):
     #myjsonpoints={"points":3}
     #myjsonclickscounter={"clickscounter":1}
     
+    try:
+        intermediary_id=request.user.username
+        if request.user.is_authenticated():
+            pass
+        else:
+            raise Exception("Access denied%s"%intermediary_id)
+
+
+    except Exception as e:
+        status={}
+        status_part={}
+        status_part["F0"]="%s"%e
+        status_part["F1"]=-1
+        status["R00"]=status_part
+        status=json.JSONEncoder().encode(status)
+        return HttpResponse(status, mimetype='application/json')
+
     
     try:
         
@@ -205,7 +222,8 @@ def dataloader(request,command_id):
         beneficiary_id=status["Id"]
         #return HttpResponse(status, mimetype='application/json') 
         
-    except Exception as e: 
+    except Exception as e:
+         
         beneficiary_id=None 
         #result={}
         activity_tuples={"Today":{},"This week":{},"Last week":{},"This month":{},"Last month":{},"Last three months":{}}
@@ -278,7 +296,7 @@ def dataloader(request,command_id):
    
     try:
         myjson=json.loads(request.body)
-   
+        #myjson={"Points":5,"ClicksCounter":5, "StartDate":'2015-03-01',"EndDate":'2015-03-31',"TimeInterval":"Monthly"}
         obj=SavePoints(myjson,intermediary_id)
         status=obj.savePointsInDB()
         
@@ -308,9 +326,15 @@ def dataloader(request,command_id):
     
     elif command_id =="PAG":
         #PAG means plot activity graph
-        myjson =json.loads(request.body)  
+        #myjson =json.loads(request.body)  
         datapoints=plotActivityGraph(myjson,beneficiary_id)
         return HttpResponse(datapoints, mimetype='application/json')
+        #status={}
+        #status["R00"]=intermediary_id
+        #status=json.JSONEncoder().encode(status)
+            
+
+        
     
     elif command_id == "PMG":
         #PMG means plot meal graph or chart

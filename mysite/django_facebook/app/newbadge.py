@@ -121,19 +121,20 @@ class RetrievePoints:
             session = Session()
                                 
 
-            #if self.last_date_specified==1:
-            #    day=self.myjson["Day"]
-            #    if day=="Today":
-            #       day=datetime.date.today()
-                         
-            #res= session.query(func.sum(Points.scoredpoints).label("sum_points")).filter(Points.intermediary_id==self.intermediary_id).filter(Points.datecaptured<=day).first()
+            if self.last_date_specified==1:
+                day=self.myjson["Day"]
+                if day=="Today":
+                   day=datetime.date.today()
+
+                res=session.query(func.count(distinct(Points.datecaptured)).label("sum_points")).filter(Points.intermediary_id==self.intermediary_id).filter(Points.datecaptured<=day).first()        
+                 #res= session.query(func.sum(Points.scoredpoints).label("sum_points")).filter(Points.intermediary_id==self.intermediary_id).filter(Points.datecaptured<=day).first()
             #get points by number of days an application has been used.
             #res=session.query(func.count(distinct(Points.datecaptured)).label("sum_points")).filter(Points.intermediary_id==self.intermediary_id).filter(Points.datecaptured<=day).first()
-            #else:
+            else:
                 #res= session.query(func.sum(Points.scoredpoints).label("sum_points")).filter(Points.intermediary_id==self.intermediary_id).first()
-            res=session.query(func.count(distinct(Points.datecaptured)).label("sum_points")).filter(Points.intermediary_id==self.intermediary_id).first()
+                res=session.query(func.count(distinct(Points.datecaptured)).label("sum_points")).filter(Points.intermediary_id==self.intermediary_id).first()
 
-
+            
             
             retrieved_points_sum=0# initialize how many distinct dates are in the database
             #for retrieved_points_sum in res:

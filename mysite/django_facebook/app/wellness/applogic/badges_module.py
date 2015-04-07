@@ -31,12 +31,14 @@ class AttainedUserBadges(Base):
     date_attained=Column(Date)
     badge_id = Column(Integer, ForeignKey("badges.rank"))
     status=Column(Boolean)
+ 
     
     def __init__(self,intermediary_id,date_attained,badge_id):
         self.intermediary_id=intermediary_id
         self.date_attained=date_attained
         self.badge_id=badge_id
         self.status=1
+     
     def getIntermediaryId(self):
         return self.intermediary_id
 
